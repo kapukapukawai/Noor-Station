@@ -1,0 +1,103 @@
+/* 1. フォントの読み込みを一番上に追加 */
+/* ⭕️ 修正後 */
+.arabic-font { font-family: 'Scheherazade New', serif !important; font-size: 1.3倍くらい大きくしてもいいかもです！; }
+
+/* 2. 単語ボックス内のアラビア語フォントを差し替え */
+.word-box div:first-child { 
+    /* カリグラフィー系から「Noto Naskh Arabic」へ */
+    font-family: 'Noto Naskh Arabic', serif !important;
+    font-weight: 700;
+    font-size: 2.6rem; /* 読みやすいサイズ */
+    line-height: 2.2 !important; /* 記号が被らない行間 */
+    direction: rtl;
+    margin-bottom: 5px;
+}
+
+/* 3. (もしあれば) アラビア語全体のクラスも統一 */
+.arabic-text {
+    font-family: 'Noto Naskh Arabic', serif !important;
+    font-weight: 700;
+    font-size: 2.6rem;
+    line-height: 2.2 !important;
+    direction: rtl;
+}
+/* --- 1. 全体設定 --- */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(255, 255, 255) !important; /* 本文もホワイト */
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+    padding-bottom: 90px;
+}
+
+/* --- 2. ナビバー（ホワイト化の核心） --- */
+nav.navbar.bg-success {
+    background-color: rgb(255, 255, 255) !important; /* 背景：白 */
+    background-image: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important; /* 境界線を薄く */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* タイトル、戻るボタン（❮）、ブランド名の文字色をダークグリーンにする */
+#surah-title, 
+.navbar .btn, 
+.navbar-brand {
+    color: rgb(29, 69, 51) !important; /* ここが白だと見えなくなるので修正 */
+    font-weight: 800 !important;
+}
+
+/* セレクトボックス（読誦変種）を白背景に馴染ませる */
+#qiraat-selector {
+    background-color: rgb(248, 250, 248) !important;
+    color: rgb(29, 69, 51) !important;
+    border: 1px solid rgba(29, 69, 51, 0.2) !important;
+    border-radius: 20px;
+}
+
+/* --- 3. クルアーン表示エリア（右寄せ・RTL） --- */
+.quran-display {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 100%;
+    direction: rtl;
+}
+
+.ayah {
+    width: 100%;
+    margin-bottom: 2rem;
+    padding: 20px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* RTL下では右寄せになる */
+}
+
+/* 単語ボックス */
+.word-box .wbw {
+    font-size: 13px;
+    font-weight: bold;
+    color: rgb(29, 69, 51); /* 意味（日本語）も深緑で統一 */
+    direction: ltr;
+}
+
+/* --- 4. 読誦変種（バリアント） --- */
+.text-variant {
+    color: #FF8C00 !important; /* オレンジ */
+    font-weight: bold;
+    border-bottom: 2px wavy #FF8C00;
+}
+
+/* --- 5. 和訳エリア --- */
+.translation {
+    width: 100%;
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8fdfa;
+    border-left: 5px solid #198754;
+    font-size: 16px;
+    color: #444;
+    direction: ltr;
+    text-align: left;
+    clear: both;
+}

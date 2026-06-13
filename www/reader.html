@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next-Quran Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
+    <style>
+        body { background-color: #f4f7f4 !important; }
+        .arabic-font { font-family: 'Amiri', serif !important; }
+        /* 読みの違い（バリアント）をオレンジにする */
+        .text-variant { color: #FF8C00 !important; font-weight: bold; }
+        .word-box { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 5px; }
+        .wbw { font-size: 0.8rem; color: #666; font-family: sans-serif; }
+
+        /* 再生中の節を優しく光らせる */
+        .ayah-container {
+            background-color: white !important; /* 基本は絶対白 */
+            transition: background-color 0.4s ease !important; 
+            border-left: 6px solid transparent !important;
+        }
+
+        .ayah-highlight {
+            background-color: #e8f5e9 !important; /* 薄い緑色 */
+            border-left: 6px solid #2e7d32 !important;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <nav class="navbar navbar-dark bg-success sticky-top shadow-sm px-2" style="background-color: #ffffff !important;">
+        <div class="container-fluid d-flex align-items-center justify-content-between flex-nowrap" style="padding: 0 4px;">
+            
+            <div class="d-flex align-items-center" style="min-width: 0; flex-grow: 1;">
+                <a href="index.html" class="btn text-white ps-0 pe-2" style="font-size: 1.4rem; line-height: 1;">❮</a>
+                <span class="navbar-brand mb-0 h1" id="surah-title" style="font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-row: 0;">
+                    Loading...
+                </span>
+            </div>
+            
+            <div class="d-flex align-items-center gap-1.5" style="flex-shrink: 0;">
+                <button id="nav-play-btn" onclick="togglePlayback()" class="btn btn-light btn-sm rounded-pill px-2.5 shadow-sm" 
+                        style="font-weight: bold; color: #1d4533; font-size: 0.75rem; white-space: nowrap; height: 30px; display: inline-flex; align-items: center; gap: 2px;">
+                    ▶ 再生
+                </button>
+
+                <button id="qiraat-modal-trigger" onclick="openQiraatModal()" 
+                        style="background: rgba(255,255,255,0.25); color:#1d4533; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; padding: 0 10px; font-weight: bold; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 3px; height: 30px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <span class="material-symbols-outlined" style="font-size: 15px;">translate</span>
+                    <span id="current-qiraat-label">HAFS</span>
+                    <span style="font-size: 0.5rem; opacity: 0.8; margin-top: 1px;">▼</span>
+                </button>
+            </div>
+
+        </div>
+    </nav>
+    <div class="container-fluid p-0">
+        <div id="quran-content" class="quran-display">
+            <div class="p-5 text-center">
+                <div class="spinner-border text-success" role="status"></div>
+                <p class="mt-3 text-muted">聖典を構築中...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="wordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered mx-auto" style="max-width: 90%;">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h6 class="text-muted w-100 text-center" id="modal-title"></h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center pb-5">
+                    <div id="modal-arabic" class="display-1 mb-3 arabic-font"></div>
+                    <h3 id="modal-meaning" class="text-secondary mb-4"></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="audioModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div id="audio-modal-header" style="padding: 25px; background: linear-gradient(135deg, #1d4533 0%, #2e7d32 100%); color: white; text-align: center; border-radius: 20px 20px 0 0;">
+                    <h5 class="mb-0">🎧 再生・ループ設定</h5>
+                    <small id="audio-status-badge">範囲を指定して学習効率UP</small>
+                </div>
+                
+                <div class="modal-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label class="small text-muted mb-1">開始 (From)</label>
+                            <select id="audio-from" class="form-select shadow-sm" style="border-radius: 10px;"></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-muted mb-1">終了 (To)</label>
+                            <select id="audio-to" class="form-select shadow-sm" style="border-radius: 10px;"></select>
+                        </div>
+                    </div>
+
+                    <div class="p-3 mb-4" style="background: #f8faf8; border-radius: 15px; border: 1px solid #eee;">
+                        <label class="small text-muted d-block mb-2">🗣️ 読み手の選択 (Reciter)</label>
+                        <select id="audio-reciter" class="form-select shadow-sm" style="border-radius: 10px;">
+                            <option value="">読み手を読み込み中...</option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 mb-4" style="background: #f8faf8; border-radius: 15px; border: 1px solid #eee;">
+                        <label class="small text-muted d-block mb-2">ループ設定</label>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-7">
+                                <span class="small">全範囲を繰り返す回数</span>
+                            </div>
+                            <div class="col-5">
+                                <select id="loop-count" class="form-select form-select-sm">
+                                    <option value="1">1回 (リピートなし)</option>
+                                    <option value="3">3回</option>
+                                    <option value="5">5回</option>
+                                    <option value="10">10回</option>
+                                    <option value="999">無限ループ</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8faf8; padding: 20px; border-radius: 16px; font-family: sans-serif; width: 100%; box-sizing: border-box; margin-bottom: 25px; border: 1px solid #eee;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="font-weight: bold; color: #333; font-size: 0.95rem;">再生速度</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span id="finish-estimate" style="background: #fff; padding: 4px 12px; border-radius: 20px; border: 1px solid #e0e0e0; font-size: 0.8rem; color: #555;">
+                                    <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">schedule</span> 計算中...
+                                </span>
+                                <span id="speed-label" style="background: #1d4533; color: white; padding: 2px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;">1.0x</span>
+                            </div>
+                        </div>
+
+                        <div style="width: 100%; position: relative;">
+                            <input type="range" id="audio-speed" min="0.5" max="2.0" step="0.1" value="1.0" list="speed-ticks" 
+                                   style="width: 100%; margin: 0; cursor: pointer; -webkit-appearance: none; background: #e0e0e0; height: 6px; border-radius: 3px; outline: none; opacity: 0.8;">
+                            
+                            <datalist id="speed-ticks">
+                                <option value="0.5"></option>
+                                <option value="1.0"></option>
+                                <option value="2.0"></option>
+                            </datalist>
+                            
+                            <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px; font-size: 0.75rem; color: #888; padding: 0 8px; box-sizing: border-box;">
+                                <span>ゆっくり (0.5x)</span>
+                                <span style="font-weight: bold; color: #1d4533; text-align: center;">標準 (1.0x)</span>
+                                <span>速め (2.0x)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button onclick="startRangePlayback()" class="btn btn-success py-3 shadow" style="border-radius: 15px; font-weight: bold; background: #1d4533; border: none;">
+                            再生を開始する
+                        </button>
+                        <button onclick="stopPlayback()" class="btn btn-link text-danger text-decoration-none small text-center">停止</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="qiraatModal" tabindex="-1" aria-hidden="true" style="direction: ltr;">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div class="modal-header" style="background: #2c4538; color: white; border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 15px 20px;">
+                    <h5 class="modal-title" style="font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-symbols-outlined">translate</span> キラート（伝承）の選択
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 12px; background: #f8f9fa;">
+                    <div id="qiraat-options-container" style="display: flex; flex-direction: column; gap: 8px;">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/reader.js"></script>
+</body>
+</html>
