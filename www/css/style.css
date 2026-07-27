@@ -1,6 +1,8 @@
-/* 1. フォントの読み込みを一番上に追加 */
-/* ⭕️ 修正後 */
-.arabic-font { font-family: 'Scheherazade New', serif !important; font-size: 1.3倍くらい大きくしてもいいかもです！; }
+/* 1. フォントの読み込み＆全体設定 */
+.arabic-font { 
+    font-family: 'Scheherazade New', serif !important; 
+    font-size: 3.4rem !important; /* 1.3倍大きめ（約2.6rem × 1.3）に調整！ */
+}
 
 /* 2. 単語ボックス内のアラビア語フォントを差し替え */
 .word-box div:first-child { 
@@ -21,6 +23,7 @@
     line-height: 2.2 !important;
     direction: rtl;
 }
+
 /* --- 1. 全体設定 --- */
 body {
     margin: 0;
@@ -42,7 +45,7 @@ nav.navbar.bg-success {
 #surah-title, 
 .navbar .btn, 
 .navbar-brand {
-    color: rgb(29, 69, 51) !important; /* ここが白だと見えなくなるので修正 */
+    color: rgb(29, 69, 51) !important; 
     font-weight: 800 !important;
 }
 
@@ -100,4 +103,20 @@ nav.navbar.bg-success {
     direction: ltr;
     text-align: left;
     clear: both;
+}
+/* 再生ボタンなどのアイコンボタンを強制的に正円（真円）にする最後の切り札 */
+button.m3-icon-btn,
+.m3-icon-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
 }

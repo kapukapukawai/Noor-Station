@@ -10,7 +10,7 @@ db.version(4).stores({
 });
 
 // ==========================================
-// 🎨 2. 定数・グローバル変数定義（エラー修正＆10キラート完全版）
+// 🎨 2. 定数・グローバル変数定義（Material You 拡張版）
 // ==========================================
 let apiArabicData = null;   
 let translationData = null;  
@@ -18,7 +18,26 @@ let currentSurahId = '1';
 let currentResourceId = 'quran-uthmani'; 
 let currentReciterId = 'Alafasy_128kbps'; 
 
+// Material You (M3) 動的カラーパレットシステム
 const COLORS = {
+    // Primary (深みのある聖典グリーン)
+    PRIMARY: '#2c4538',
+    ON_PRIMARY: '#ffffff',
+    PRIMARY_CONTAINER: '#edf5f1',
+    ON_PRIMARY_CONTAINER: '#1d4533',
+    
+    // Secondary / Accent (異読用アクセントオレンジ)
+    CUSTOM_ORANGE: '#FF8C00',
+    SURFACE_VARIANT: '#f0f4f1',
+    ON_SURFACE_VARIANT: '#414944',
+    
+    // M3ベースカラー
+    BACKGROUND: '#f8faf7',
+    SURFACE: '#ffffff',
+    OUTLINE: '#717974',
+    OUTLINE_VARIANT: '#c1c9c4',
+    
+    // 既存ロジック・変数との完全互換用マッピング（破壊防止ガード）
     DEEP_GREEN_HERO: '#2c4538',
     TEXT_HERO_JP: '#829b8f',
     DEEP_GREEN: '#1d4533',
@@ -39,18 +58,114 @@ const qiraatConfig = {
     'kisai':  { id: 'ar.alkisai',     name: 'Al-Kisa\'i (キサイ読み)', desc: 'クーファ派・文法学者由来の伝承' }
 };
 
-// 🚨 復活フォントファミリー
-const SANS_FONT = "'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif";
+// 🚨 タイポグラフィシステム（復活フォントファミリーにM3のエッセンスを調和）
+const SANS_FONT = "system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif";
+const ARABIC_FONT = "'Scheherazade New', 'Amiri', serif";
 
 let currentAudio = new Audio();
 let isPlaying = false;
 const durationCache = {};
 
 // ==========================================
+// 💅 2.5. Material You グローバルスタイル自動注入
+// ==========================================
+const injectMaterialYouStyles = () => {
+    if (document.getElementById('m3-dynamic-styles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'm3-dynamic-styles';
+    style.innerHTML = `
+        body {
+            background-color: ${COLORS.BACKGROUND} !important;
+            font-family: ${SANS_FONT};
+            transition: background-color 0.3s ease;
+            margin: 0;
+            padding: 16px;
+        }
+
+        /* Material You カードコンテナ（滑らかな大角丸） */
+        .ayah-container {
+            background: ${COLORS.SURFACE};
+            border-radius: 24px !important;
+            margin-bottom: 16px;
+            border: none !important;
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.04), 0px 1px 2px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1) !important;
+        }
+
+        /* 再生中ハイライト：コンテナが美しく浮き上がり、色味が優しく変化 */
+        .ayah-container.ayah-highlight {
+            background: ${COLORS.PRIMARY_CONTAINER} !important;
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.06) !important;
+            transform: scale(1.005);
+        }
+
+        /* 単語ボックス：Material Youの「Filled Tonal Button」風デザイン */
+        .word-box {
+            background: ${COLORS.SURFACE_VARIANT};
+            color: ${COLORS.ON_SURFACE_VARIANT};
+            border-radius: 16px;
+            padding: 10px 18px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            border: 1px solid transparent;
+            user-select: none;
+        }
+
+        .word-box:hover {
+            background: ${COLORS.PRIMARY_CONTAINER};
+            color: ${COLORS.ON_PRIMARY_CONTAINER};
+            transform: translateY(-3px);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .word-box:active {
+            transform: translateY(-1px);
+            opacity: 0.85;
+        }
+
+        /* アイコンボタンのM3インタラクション */
+        .m3-icon-btn {
+            background: ${COLORS.SURFACE_VARIANT};
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: ${COLORS.PRIMARY};
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .m3-icon-btn:hover {
+            background: ${COLORS.PRIMARY_CONTAINER};
+            color: ${COLORS.ON_PRIMARY_CONTAINER};
+            transform: scale(1.05);
+        }
+
+        /* Webkitスクロールバーの最適化 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${COLORS.OUTLINE_VARIANT}; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: ${COLORS.OUTLINE}; }
+    `;
+    document.head.appendChild(style);
+};
+
+// ==========================================
 // 🚀 3. ライフサイクル & イベント配線
 // ==========================================
 window.onload = async () => {
     console.log("[System] Quran Offline App Started (Al Quran Cloud / Full Features)");
+    
+    // Material You スタイルのインジェクションを実行
+    injectMaterialYouStyles();
     
     const urlParams = new URLSearchParams(window.location.search);
     currentSurahId = urlParams.get('surah') || '1';
@@ -71,7 +186,7 @@ function changeQiraat(value) {
 }
 
 /**
- * キラート選択モーダルを開く
+ * キラート選択モーダルを開く（ネイティブ dialog 完全対応版）
  */
 function openQiraatModal() {
     const container = document.getElementById('qiraat-options-container');
@@ -83,7 +198,7 @@ function openQiraatModal() {
         const isSelected = (currentResourceId === item.id);
         
         html += `
-            <button onclick="selectQiraatFromModal('${key}')" 
+            <button type="button" onclick="selectQiraatFromModal('${key}')" 
                     style="width: 100%; text-align: left; padding: 12px 16px; border-radius: 10px; border: 2px solid ${isSelected ? COLORS.DEEP_GREEN : '#e0e0e0'}; background: ${isSelected ? '#edf5f1' : 'white'}; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; cursor: pointer; margin-bottom: 4px;">
                 <div>
                     <div style="font-weight: bold; color: ${isSelected ? COLORS.DEEP_GREEN : '#333'}; font-size: 0.95rem;">${item.name}</div>
@@ -95,27 +210,27 @@ function openQiraatModal() {
     });
     container.innerHTML = html;
 
+    // Bootstrapを廃止し、ネイティブの showModal() を使用
     const modalEl = document.getElementById('qiraatModal');
-    if (modalEl) {
-        let bModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        bModal.show();
+    if (modalEl && typeof modalEl.showModal === 'function') {
+        modalEl.showModal();
     }
 }
-
 /**
  * モーダル内でのキラート決定・データ再リロード処理
  */
 async function selectQiraatFromModal(qiraatKey) {
     const modalEl = document.getElementById('qiraatModal');
     if (modalEl) {
-        const bModal = bootstrap.Modal.getInstance(modalEl);
-        if (bModal) bModal.hide();
+        // 修正：Bootstrapではなくネイティブの .close() メソッドを使用
+        modalEl.close();
     }
 
     const item = qiraatConfig[qiraatKey];
     if (!item) return;
 
-    const scrollPos = window.scrollY;
+    const scrollPos = window
+    window.scrollY;
     currentResourceId = item.id;
     
     updateQiraatTriggerLabel();
@@ -133,7 +248,16 @@ async function selectQiraatFromModal(qiraatKey) {
     await loadHybridData(currentSurahId, currentResourceId); 
     requestAnimationFrame(() => window.scrollTo(0, scrollPos));
 }
-
+/**
+ * 🌟 追加：アラビア語の文字列を安全に比較・正規化するヘルパー
+ */
+function normalizeArabic(str) {
+    if (!str) return '';
+    return str
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // ゼロ幅スペース等のノイズを除去
+        .replace(/\s+/g, ' ')                 // 連続するスペースを単一化
+        .trim();
+}
 /**
  * ヘッダーボタンのテキストラベルを同期更新する
  */
@@ -146,11 +270,41 @@ function updateQiraatTriggerLabel() {
         labelEl.innerText = found.name.split(' ')[0].toUpperCase(); 
     }
 }
+/**
+ * アラビア語の文字列を安全に比較・正規化するヘルパー（ノイズ・空白の誤検知防止）
+ */
+function normalizeArabic(str) {
+    if (!str) return '';
+    return str
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // ゼロ幅スペース等のノイズを除去
+        .replace(/\s+/g, ' ')                 // 連続するスペースを単一化
+        .trim();
+}
 
-// ==========================================
-// 📥 4. データロード & ハイブリッドキャッシュ
-// ==========================================
+/**
+ * 📥 データロード & ハイブリッドキャッシュ（正規化比較・誤爆防止完全版）
+ */
 async function loadHybridData(surahId, editionId) {
+    // URLの ?surah=1 みたいなパラメータから現在の章番号を確実に取得する
+const urlParams = new URLSearchParams(window.location.search);
+const currentSurahId = urlParams.get('surah') || '1'; // デフォルトで第1章
+
+//もし surahInfo がまだなければAPIから最低限の情報を引っ張ってくる
+if (!window.surahInfo) {
+    try {
+        const infoRes = await fetch(`https://api.alquran.cloud/v1/surah/${currentSurahId}`);
+        const infoJson = await infoRes.json();
+        if (infoJson.code === 200) {
+            window.surahInfo = {
+                name: infoJson.data.name,                 // アラビア語名
+                englishName: infoJson.data.englishName,   // 英語名
+                juz: infoJson.data.ayahs[0].juz           // 所属するジュズ
+            };
+        }
+    } catch (e) {
+        console.error("スーラ情報の取得に失敗しました", e);
+    }
+}
     const content = document.getElementById('quran-content');
     if (content) content.innerHTML = `<div class="p-5 text-center"><div class="spinner-border text-success" role="status"></div></div>`;
     
@@ -182,11 +336,18 @@ async function loadHybridData(surahId, editionId) {
                 const wordsArray = ayah.text ? ayah.text.split(' ') : [];
                 const hafsWordsArray = hafsVerses[aIdx]?.text ? hafsVerses[aIdx].text.split(' ') : [];
                 
-                ayah.words = wordsArray.map((wordText, wIdx) => ({
-                    display_arabic: wordText,
-                    isVariant: (editionId !== 'quran-uthmani' && wordText !== hafsWordsArray[wIdx]),
-                    char_type_name: 'word'
-                }));
+                ayah.words = wordsArray.map((wordText, wIdx) => {
+                    // 💡 各々を完全に正規化してから比較する
+                    const normCurrent = normalizeArabic(wordText);
+                    const normHafs = normalizeArabic(hafsWordsArray[wIdx] || '');
+                    
+                    return {
+                        display_arabic: wordText,
+                        // 正規化した結果が一致するかどうかで安全に判定
+                        isVariant: (editionId !== 'quran-uthmani' && normCurrent !== normHafs),
+                        char_type_name: 'word'
+                    };
+                });
                 ayah.verse_number = ayah.numberInSurah;
             });
 
@@ -201,7 +362,6 @@ async function loadHybridData(surahId, editionId) {
         console.error("フェッチ失敗:", e);
     }
 }
-
 // ==========================================
 // 📥 5. 自動保存タスク
 // ==========================================
@@ -264,8 +424,22 @@ async function handleAutoSaveTrigger(surahId, editionId) {
 }
 
 // ==========================================
-// 🎨 6. レンダリングエンジン
+// 🎨 6. レンダリングエンジン (Material Design 3 統合)
 // ==========================================
+/**
+ * アラビア語の文字列を安全に比較・正規化するヘルパー（ノイズ・空白の誤検知防止）
+ */
+function normalizeArabic(str) {
+    if (!str) return '';
+    return str
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // ゼロ幅スペース等のノイズを除去
+        .replace(/\s+/g, ' ')                 // 連続するスペースを単一化
+        .trim();
+}
+
+/**
+ * 節（アヤ）の単語群をレンダリング（正規化比較・M3カラー完全対応版）
+ */
 function renderWordsHtml(verse) {
     let wHtml = '';
     if (!verse.words) return wHtml;
@@ -273,25 +447,36 @@ function renderWordsHtml(verse) {
     verse.words.forEach((w) => {
         if (w.char_type_name === 'end') return;
         
-        const displayWord = w.display_arabic;
-        const variantStyle = w.isVariant ? `color: ${COLORS.VARIANT_ORANGE}; font-weight: bold; text-shadow: 0 0 5px rgba(255,140,0,0.3);` : '';
+        const displayWord = w.display_arabic || '';
         
-        // 💡 エスケープ処理をより安全な文字列置換へ統一
+        // 💡 比較時に正規化を噛ませて、見た目や記号の揺れによる誤爆をシャットアウト
+        const normalizedDisplay = normalizeArabic(displayWord);
+        // もし比較対象の基準語がある場合はここで正規化比較する（フラグの暴走を防ぐ）
+        const isActuallyDifferent = w.isVariant && normalizedDisplay !== '';
+        
+        // 異読（isVariant）フラグによるM3カラーの動的変更（誤爆が減って本当に違うとこだけ光る）
+        const variantStyle = isActuallyDifferent 
+            ? `color: ${COLORS.CUSTOM_ORANGE}; font-weight: 800; text-shadow: 0 0 10px rgba(255,140,0,0.2);` 
+            : `color: ${COLORS.ON_PRIMARY_CONTAINER};`;
+        
+        // 既存の安全な文字列エスケープ処理を完全踏襲
         const escapedTranslation = (w.translation ? w.translation.text : '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         
         wHtml += `
             <div class="word-box" onclick="openWordModal('${displayWord}', '${escapedTranslation}')">
-                <span style="font-family: 'Scheherazade New', 'Amiri', serif; font-size: 3.2rem; ${variantStyle}">${displayWord}</span>
-                <span class="wbw">${w.translation ? w.translation.text : ''}</span>
+                <span style="font-family: ${ARABIC_FONT}; font-size: 2.8rem; line-height: 1.2; ${variantStyle}">${displayWord}</span>
+                <span class="wbw" style="font-size: 0.85rem; opacity: 0.8; font-family: ${SANS_FONT}; font-weight: 500;">${w.translation ? w.translation.text : ''}</span>
             </div>`;
     });
+
+    // アヤ番号バッジ（節末を美しく飾るマテリアルサークル仕様）
     wHtml += `
-        <div class="word-box" style="cursor: default; display: inline-flex; align-items: center;">
-            <span style="font-family: 'Scheherazade New', 'Amiri', serif; font-size: 3.2rem; color: ${COLORS.DEEP_GREEN}; opacity: 0.8;">&#xFD3F;${verse.verse_number}&#xFD3E;</span>
+        <div class="word-box" style="cursor: default; background: ${COLORS.PRIMARY_CONTAINER}; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; min-width: 55px; box-shadow: none;">
+            <span style="font-family: ${ARABIC_FONT}; font-size: 2.2rem; color: ${COLORS.PRIMARY}; font-weight: bold; line-height: 1;">&#xFD3F;${verse.verse_number}&#xFD3E;</span>
         </div>`;
+        
     return wHtml;
 }
-
 function render() {
     const content = document.getElementById('quran-content');
     const surahTitleEl = document.getElementById('surah-title');
@@ -308,58 +493,65 @@ function render() {
 
     if (surahTitleEl) surahTitleEl.innerText = `${surahNameEnglish}`;
 
-    let html = `
-        <div style="background: ${COLORS.DEEP_GREEN_HERO}; color: white; padding: 40px; font-family: ${SANS_FONT}; width: 100%; direction: ltr; margin-bottom: 20px; border-radius: 12px;">
-            <div style="max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="font-family: 'Scheherazade New', 'Amiri', serif; font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 10px;">
-                        ${surahNameArabic}
+// 🌟 6-A. HEADER HERO CARD (Material You "Large Card" 安定版)
+// ※ 描画する前に ayahsCount にちゃんと正しい数（apiArabicData.length など）が入っているか確認！
+const safeAyahsCount = typeof ayahsCount !== 'undefined' ? ayahsCount : (window.apiArabicData ? apiArabicData.length : 0);
+
+let html = `
+    <div style="background: ${COLORS.PRIMARY}; color: ${COLORS.ON_PRIMARY}; padding: 28px 32px; font-family: ${SANS_FONT}; width: 100%; box-sizing: border-box; margin-bottom: 24px; border-radius: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+        <div style="max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
+            
+           <div style="display: flex; flex-direction: row; align-items: center; gap: 20px; min-width: 220px; flex-wrap: wrap;">
+    <div style="font-family: ${ARABIC_FONT}; font-size: 2.6rem; font-weight: 700; line-height: 1.2;">
+        ${surahNameArabic}
+    </div>
+    <button onclick="openAudioModal('${currentSurahId}')" 
+            style="background: ${COLORS.PRIMARY_CONTAINER}; color: ${COLORS.ON_PRIMARY_CONTAINER}; border: none; border-radius: 100px; padding: 10px 22px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content;">
+        <span class="material-symbols-outlined" style="font-size: 20px;">settings_voice</span>
+        <span>範囲再生設定</span>
+    </button>
+</div>
+            <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <div style="width: 1px; background: rgba(255,255,255,0.2); height: 56px; display: none; /* スマホ等で非表示 */"></div>
+                <div style="font-family: monospace; font-size: 0.85rem; color: ${COLORS.TEXT_HERO_JP}; text-align: right; display: flex; align-items: center; gap: 16px;">
+                    <div>
+                        <div style="margin-bottom: 4px;"><span>JUZ</span> <strong style="color:#fff;">${juzId}</strong></div>
+                        <div><span>AYAHS</span> <strong style="color:#fff;">${safeAyahsCount}</strong></div>
                     </div>
-                    <button onclick="openAudioModal(${currentSurahId})" 
-                            style="background: white; color: ${COLORS.DEEP_GREEN}; border: none; border-radius: 8px; padding: 8px 16px; font-weight: bold; cursor: pointer; font-size: 0.9rem; margin-top: 10px; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">settings_voice</span> 範囲再生設定
-                    </button>
-                </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 1px; background: rgba(255,255,255,0.2); height: 50px;"></div>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: ${COLORS.TEXT_HERO_JP}; text-align: right;">
-                        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 2px;">
-                            <span>JUZ</span><span style="color:#fff; font-weight:bold;">${juzId}</span>
-                        </div>
-                        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 8px;">
-                            <span>AYAHS</span><span style="color:#fff; font-weight:bold;">${ayahsCount}</span>
-                        </div>
-                        <div>
-                            <span style="font-size: 0.6rem; opacity: 0.5; display: block;">QIRA'AT</span>
-                            <span style="color: ${COLORS.VARIANT_ORANGE}; font-size: 1.1rem; font-weight: 800;">
-                                ${selectedText.split(' ')[0].toUpperCase()}
-                            </span>
-                        </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                        <span style="font-size: 0.6rem; opacity: 0.7; display: block; letter-spacing: 1px;">QIRA'AT</span>
+                        <span style="color: ${COLORS.CUSTOM_ORANGE}; font-size: 1rem; font-weight: 900;">
+                            ${typeof selectedText !== 'undefined' ? selectedText.split(' ')[0].toUpperCase() : 'HAFS'}
+                        </span>
                     </div>
                 </div>
             </div>
-        </div>
-    `;
 
+        </div>
+    </div>
+`;    // 🌟 6-B. AYAH LIST RENDER (Material You Surface Cards コンポーネント群)
     apiArabicData.forEach((apiVerse, idx) => {
         const translationText = translationData[idx] ? translationData[idx].text : "...";
         html += `
-            <div id="ayah-anchor-${apiVerse.verse_number}" class="ayah-container" style="transition: all 0.4s; padding: 20px 0; border-bottom: 1px solid #eee;">
-                <div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; direction: ltr;">
-                        <span style="font-family: monospace; font-weight: bold; color: ${COLORS.DEEP_GREEN};">AYAH ${apiVerse.verse_number}</span>
-                        <button onclick="playAyahAudio(${currentSurahId}, ${apiVerse.verse_number})" 
-                                style="background:none; border:1px solid ${COLORS.DEEP_GREEN}; border-radius:50%; width:32px; height:32px; color:${COLORS.DEEP_GREEN}; cursor:pointer; display: flex; align-items:center; justify-content:center;">
-                                <span class="material-symbols-outlined" style="font-size: 16px;">play_arrow</span>
+            <div id="ayah-anchor-${apiVerse.verse_number}" class="ayah-container" style="padding: 28px;">
+                <div style="max-width: 1100px; margin: 0 auto;">
+                    
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; direction: ltr;">
+                        <span style="font-family: monospace; font-weight: 800; color: ${COLORS.PRIMARY}; letter-spacing: 0.5px; font-size: 0.95rem;">AYAH ${apiVerse.verse_number}</span>
+                        
+                        <button onclick="playAyahAudio(${currentSurahId}, ${apiVerse.verse_number})" class="m3-icon-btn">
+                            <span class="material-symbols-outlined" style="font-size: 24px; font-weight: bold;">play_arrow</span>
                         </button>
-                        <div style="flex-grow:1; height:1px; background:linear-gradient(to right, ${COLORS.DEEP_GREEN}, transparent); opacity:0.1;"></div>
+                        <div style="flex-grow: 1; height: 1px; background: ${COLORS.OUTLINE_VARIANT}; opacity: 0.4;"></div>
                     </div>
-                    <div style="direction: rtl; margin-bottom: 25px; text-align: right;">
-                        <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px 15px; line-height: 4.5rem;">
+                    
+                    <div style="direction: rtl; margin-bottom: 28px; text-align: right;">
+                        <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 14px 18px; line-height: 5.2rem;">
                             ${renderWordsHtml(apiVerse)}
                         </div>
                     </div>
-                    <div style="border-left: 4px solid ${COLORS.DEEP_GREEN}; padding-left: 20px; color: #333; line-height: 1.6; font-size: 1.1rem; direction: ltr; text-align: left;">
+                    
+                    <div style="border-left: 4px solid ${COLORS.PRIMARY}; padding-left: 20px; color: ${COLORS.ON_SURFACE_VARIANT}; line-height: 1.8; font-size: 1.05rem; direction: ltr; text-align: left; font-weight: 400;">
                         ${translationText}
                     </div>
                 </div>
@@ -512,6 +704,48 @@ async function playAyahAudio(surahId, ayahNum) {
         }
     });
 }
+/**
+ * 🎧 オーディオ設定・範囲選択モーダルを開く関数
+ */
+function openAudioModal(surahId) {
+    const modal = document.getElementById('audioModal');
+    if (!modal) return;
+
+    // 読み手セレクトボックスの初期化（まだなら生成）
+    loadRecitersAndPopulateSelect();
+
+    // 現在のスーラ（章）に含まれるアヤの数をもとに、開始・終了のセレクトボックスを動的生成
+    const fromSelect = document.getElementById('audio-from');
+    const toSelect = document.getElementById('audio-to');
+    
+    if (fromSelect && toSelect && apiArabicData) {
+        const totalAyahs = apiArabicData.length;
+        let optionsHtml = '';
+        for (let i = 1; i <= totalAyahs; i++) {
+            optionsHtml += `<option value="${i}">第 ${i} 節</option>`;
+        }
+        
+        fromSelect.innerHTML = optionsHtml;
+        toSelect.innerHTML = optionsHtml;
+        
+        // デフォルト値（最初から最後まで）
+        fromSelect.value = 1;
+        toSelect.value = totalAyahs;
+    }
+
+    // ネイティブの <dialog> をモーダルとして表示
+    if (typeof modal.showModal === 'function') {
+        modal.showModal();
+    } else {
+        modal.style.display = 'block'; // フォールバック
+    }
+
+    // モーダルが開いたタイミングで速度や見積もりも更新しておく
+    const speedInput = document.getElementById('audio-speed');
+    if (speedInput) {
+        updateSpeedLabel(speedInput.value);
+    }
+}
 
 /**
  * ループ範囲再生開始タスク
@@ -527,10 +761,9 @@ async function startRangePlayback() {
     }
 
     const modalEl = document.getElementById('audioModal');
-    if (modalEl) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) modalInstance.hide();
-    }
+if (modalEl && typeof modalEl.close === 'function') {
+    modalEl.close();
+}
     
     isPlaying = true;
     updateNavPlayButton(true);
