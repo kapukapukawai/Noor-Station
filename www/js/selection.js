@@ -82,7 +82,7 @@ async function fetchAndRenderSurahs() {
 // ==========================================
 // 🚀 自作アプデ通知機能
 // ==========================================
-const CURRENT_VERSION = "3.2.0";
+const CURRENT_VERSION = "3.4.0";
 
 async function checkAppUpdate() {
     try {
