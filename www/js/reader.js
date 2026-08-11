@@ -443,40 +443,43 @@ function normalizeArabic(str) {
 function renderWordsHtml(verse) {
     let wHtml = '';
     if (!verse.words) return wHtml;
-    
+
     verse.words.forEach((w) => {
         if (w.char_type_name === 'end') return;
-        
+
         const displayWord = w.display_arabic || '';
-        
+
         // 💡 比較時に正規化を噛ませて、見た目や記号の揺れによる誤爆をシャットアウト
         const normalizedDisplay = normalizeArabic(displayWord);
+
         // もし比較対象の基準語がある場合はここで正規化比較する（フラグの暴走を防ぐ）
         const isActuallyDifferent = w.isVariant && normalizedDisplay !== '';
-        
-        // 異読（isVariant）フラグによるM3カラーの動的変更（誤爆が減って本当に違うとこだけ光る）
+
+        // 異読（isVariant）フラグによるM3カラーの動的変更
         const variantStyle = isActuallyDifferent 
             ? `color: ${COLORS.CUSTOM_ORANGE}; font-weight: 800; text-shadow: 0 0 10px rgba(255,140,0,0.2);` 
             : `color: ${COLORS.ON_PRIMARY_CONTAINER};`;
-        
+
         // 既存の安全な文字列エスケープ処理を完全踏襲
         const escapedTranslation = (w.translation ? w.translation.text : '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        
+
         wHtml += `
-            <div class="word-box" onclick="openWordModal('${displayWord}', '${escapedTranslation}')">
-                <span style="font-family: ${ARABIC_FONT}; font-size: 2.8rem; line-height: 1.2; ${variantStyle}">${displayWord}</span>
-                <span class="wbw" style="font-size: 0.85rem; opacity: 0.8; font-family: ${SANS_FONT}; font-weight: 500;">${w.translation ? w.translation.text : ''}</span>
-            </div>`;
+            <div class="word-box" onclick="openWordModal('${displayWord}', '${escapedTranslation}')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 8px; margin: 4px; background: ${COLORS.PRIMARY_CONTAINER}; border-radius: 12px; min-width: 70px;">
+                <span style="font-family: ${ARABIC_FONT}; font-size: 1.8rem; line-height: 1.4; text-align: center; ${variantStyle}">${displayWord}</span>
+                <span class="wbw" style="font-size: 0.75rem; opacity: 0.8; font-family: ${SANS_FONT}; font-weight: 500; text-align: center; margin-top: 4px;">${w.translation ? w.translation.text : ''}</span>
+            </div>
+        `;
     });
 
-    // アヤ番号バッジ（節末を美しく飾るマテリアルサークル仕様）
+    return wHtml;
+}    // アヤ番号バッジ（節末を美しく飾るマテリアルサークル仕様）
     wHtml += `
         <div class="word-box" style="cursor: default; background: ${COLORS.PRIMARY_CONTAINER}; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; min-width: 55px; box-shadow: none;">
             <span style="font-family: ${ARABIC_FONT}; font-size: 2.2rem; color: ${COLORS.PRIMARY}; font-weight: bold; line-height: 1;">&#xFD3F;${verse.verse_number}&#xFD3E;</span>
         </div>`;
         
     return wHtml;
-}
+
 function render() {
     const content = document.getElementById('quran-content');
     const surahTitleEl = document.getElementById('surah-title');

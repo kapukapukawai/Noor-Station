@@ -31,39 +31,37 @@ async function fetchAndRenderSurahs() {
         // 3. レンダリング
         let html = '';
         surahList.forEach(s => {
-    const isSaved = savedKeys.some(key => key.startsWith(`${s.number}_`));
+            const isSaved = savedKeys.some(key => key.startsWith(`${s.number}_`));
 
-    // 📱 気ぃ散る要素を完全排除：座布団もチェックアイコンもすべて捨てました。
-    // 保存されている時は、サブテキスト（節数）の横に、上品な深緑で「・ 保存済」と静かに寄り添うだけにします。
-    html += `
-        <a href="reader.html?surah=${s.number}" class="android-setting-item" style="background-color: transparent !important;">
-            
-            <div class="android-item-left">
-                <div class="android-circle-icon" 
-                     style="background-color: ${isSaved ? 'var(--android-selected-bg)' : 'var(--android-icon-bg)'} !important;
-                            color: ${isSaved ? 'var(--android-selected-text)' : 'var(--android-text-main)'} !important;">
-                    ${String(s.number).padStart(3, '0')}
-                </div>
-                
-                <div class="android-item-text">
-                    <div class="android-title-row">
-                        <span class="android-surah-title">${s.englishName}</span>
-                    </div>
-                    <span class="android-surah-subtitle">
-                        第 ${s.number} 章 / ${s.numberOfAyahs} 節
-                        ${isSaved ? `
-                            <span style="color: var(--android-selected-text) !important; font-weight: bold; margin-left: 8px;">
-                                ・ 保存済
+            html += `
+                <a href="reader.html?surah=${s.number}" class="android-setting-item">
+                    <div class="android-item-left">
+                        <div class="android-circle-icon" 
+                             style="background-color: ${isSaved ? 'var(--android-selected-bg)' : 'var(--android-icon-bg)'} !important;
+                                    color: ${isSaved ? 'var(--android-selected-text)' : 'var(--android-text-main)'} !important;">
+                            ${String(s.number).padStart(3, '0')}
+                        </div>
+                        
+                        <div class="android-item-text">
+                            <div class="android-title-row">
+                                <span class="android-surah-title">${s.englishName}</span>
+                            </div>
+                            <span class="android-surah-subtitle">
+                                第 ${s.number} 章 / ${s.numberOfAyahs} 節
+                                ${isSaved ? `
+                                    <span style="color: var(--android-selected-text) !important; font-weight: bold; margin-left: 8px;">
+                                        ・ 保存済
+                                    </span>
+                                ` : ''}
                             </span>
-                        ` : ''}
-                    </span>
-                </div>
-            </div>
+                        </div>
+                    </div>
 
-            <div class="surah-name-ar">${s.name}</div>
-        </a>
-    `;
-});
+                    <div class="surah-name-ar">${s.name}</div>
+                </a>
+            `;
+        });
+        
         container.innerHTML = html;
 
     } catch (e) {
@@ -82,7 +80,7 @@ async function fetchAndRenderSurahs() {
 // ==========================================
 // 🚀 自作アプデ通知機能
 // ==========================================
-const CURRENT_VERSION = "3.4.0";
+const CURRENT_VERSION = "3.5.0";
 
 async function checkAppUpdate() {
     try {

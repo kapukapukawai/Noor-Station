@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@material/web@latest/progress/circular-progress.js"></script>
     <title>AL-くるあーん | 聖典閲覧</title>
     
     <!-- Material You用のフォント、アイコン、Beer CSSライブラリ -->
@@ -264,14 +265,34 @@
 <!-- 📦 聖典本文メインコンテナ -->
 <main class="reader-container">
     <div id="quran-content" class="quran-display">
-        <!-- ローディングスピナー（Beer CSS標準スタイル） -->
-        <div class="center-align padding opacity-60" style="padding-top: 100px !important;">
-            <progress class="circle large intensified"></progress>
-            <p class="margin-top text-muted">聖典を構築中...</p>
+        <!-- 絶対に消えない・一番確実なうねうねローディング -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 100px !important;">
+            <div class="safe-spinner"></div>
+            <p style="margin-top: 16px; font-family: sans-serif; color: var(--android-text-sub); font-weight: 500;">聖典を構築中...</p>
         </div>
     </div>
 </main>
 
+<style>
+.safe-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4.5px solid rgba(56, 106, 74, 0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: safe-spin 0.8s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
+    box-sizing: border-box;
+}
+
+@keyframes safe-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+</style>
 <!-- 🧩 単語翻訳モーダル（dialog要素で防弾化） -->
 <dialog id="wordModal" class="android-dialog center">
     <h5 id="modal-title" class="center-align small-text"></h5>
