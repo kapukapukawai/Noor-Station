@@ -77,25 +77,6 @@ async function fetchAndRenderSurahs() {
     }
 }
 
-// ==========================================
-// 🚀 自作アプデ通知機能
-// ==========================================
-const CURRENT_VERSION = "3.5.0";
-
-async function checkAppUpdate() {
-    try {
-        const response = await fetch('https://nxqa-40cde.web.app/version.json', {
-            cache: 'no-store'
-        });
-        const data = await response.json();
-
-        if (data.latestVersion !== CURRENT_VERSION) {
-            alert(`新しいバージョン (${data.latestVersion}) がありマス！\nブラウザから最新のAPKをダウンロードして再インストールしてください。`);
-        }
-    } catch (error) {
-        console.log('アプデチェック未実施（オフラインまたはサーバー未設置）');
-    }
-}
 
 // 画面読み込み時のトリガー
 document.addEventListener('DOMContentLoaded', () => {

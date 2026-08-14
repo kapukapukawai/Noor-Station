@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azan Ultimate App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        :root {
+            --android-bg: #f9f9fc !important;
+            --android-text-main: #1a1c19 !important;
+            --android-text-sub: #424944 !important;
+            --primary: #2e693f !important;
+            --android-selected-bg: #cce8cd !important;
+            --android-selected-text: #0b381e !important;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--android-bg);
+            color: var(--android-text-main);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .m3-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(46, 105, 63, 0.15);
+            box-sizing: border-box;
+        }
+
+        .m3-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .m3-header span {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin: 0;
+            color: var(--android-text-main);
+        }
+
+        .countdown-container {
+            background-color: var(--android-selected-bg);
+            padding: 14px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--android-text-sub);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .countdown-timer {
+            font-size: 1.6rem;
+            font-weight: 700;
+            font-family: monospace;
+            color: var(--android-selected-text);
+        }
+
+        .next-prayer-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--android-text-sub);
+            margin-top: 2px;
+        }
+
+        .settings-box {
+            background-color: #f0f4f1;
+            padding: 12px 14px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--android-text-main);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .m3-input, .m3-select {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(46, 105, 63, 0.3);
+            background-color: #f0f4f1;
+            color: var(--android-text-main);
+            font-size: 0.9rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .m3-button.outline-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            gap: 6px;
+            font-size: 0.85rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prayer-list {
+            background-color: #f0f4f1;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .prayer-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 9px 14px;
+            border-bottom: 1px solid rgba(46, 105, 63, 0.08);
+            font-size: 0.85rem;
+            color: var(--android-text-main);
+        }
+
+        .prayer-item.sub-event {
+            background-color: rgba(0, 0, 0, 0.02);
+            color: var(--android-text-sub);
+            font-size: 0.8rem;
+        }
+
+        .prayer-item.active {
+            background-color: rgba(46, 105, 63, 0.12);
+            font-weight: 700;
+            color: var(--android-text-main);
+        }
+
+        .prayer-item:last-child { border-bottom: none; }
+
+        .status {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: var(--android-text-sub);
+            text-align: center;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .modal-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            margin: 12px 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            border: 1px solid rgba(46, 105, 63, 0.2);
+        }
+
+        .map-gps-btn {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            z-index: 999;
+            background-color: #ffffff;
+            color: var(--primary);
+            border: 1px solid rgba(46, 105, 63, 0.3);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+
+        .modal-close-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background-color: var(--primary);
+            color: #ffffff;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="m3-card">
+        <div class="m3-header">
+            <span class="material-symbols-outlined">mosque</span>
+            <h1>アルティメット・アザーン</h1>
+        </div>
+
+        <div class="countdown-container" id="countdownContainer">
+            <div class="section-title" id="countdownTitle">次のイベントまで</div>
+            <div class="countdown-timer" id="countdownTimer">--:--:--</div>
+            <div class="next-prayer-name" id="nextPrayerName">読み込み中...</div>
+        </div>
+
+        <!-- 音声設定パネル追加 -->
+        <div class="settings-box">
+            <div class="setting-row">
+                <span>通知音の種類</span>
+                <select class="m3-select" id="soundSelect" style="max-width: 160px; padding: 6px 10px;" onchange="saveSoundSetting()">
+                    <option value="azan.mp3">アザーン (Azan)</option>
+                    <option value="default">標準アラーム (Default)</option>
+                    <option value="silent">サイレント (通知のみ)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="m3-button outline-btn" onclick="moveToCurrentGPS(true)">
+                <span class="material-symbols-outlined">my_location</span>
+                GPSでセット
+            </button>
+            <button class="m3-button outline-btn" onclick="openMapModal()">
+                <span class="material-symbols-outlined">map</span>
+                地図で選ぶ
+            </button>
+        </div>
+
+        <div class="section-title">主要都市から選択</div>
+        <div class="search-box">
+            <select class="m3-select" id="citySelect" onchange="selectPresetCity()">
+                <option value="35.6762,139.6503,東京">🇯🇵 東京 (Tokyo)</option>
+                <option value="34.6937,135.5022,大阪">🇯🇵 大阪 (Osaka)</option>
+                <option value="21.4225,39.8262,メッカ">🇸🇦 メッカ (Mecca)</option>
+                <option value="30.0444,31.2357,カイロ">🇪🇬 カイロ (Cairo)</option>
+                <option value="41.0082,28.9784,イスタンブール">🇹🇷 イスタンブール (Istanbul)</option>
+            </select>
+        </div>
+
+        <div class="section-title">本日のスケジュール</div>
+        <div class="prayer-list" id="prayerList">
+            <div class="prayer-item" style="color: var(--android-text-sub); justify-content: center;">
+                読み込み中...
+            </div>
+        </div>
+
+        <div class="status" id="statusText">ステータス: 起動中...</div>
+    </div>
+
+    <div class="modal-overlay" id="mapModal">
+        <div class="modal-card">
+            <div class="section-title" style="margin-bottom:0;">地図をタップまたは現在地を選択</div>
+            
+            <div class="map-wrapper">
+                <div id="map"></div>
+                <button class="map-gps-btn" onclick="panMapToCurrentGPS()" title="現在地に移動">
+                    <span class="material-symbols-outlined">my_location</span>
+                </button>
+            </div>
+
+            <button class="modal-close-btn" onclick="closeMapModal()">決定して閉じる</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="capacitor.js"></script>
+    
+    <script>
+        const countdownTitle = document.getElementById('countdownTitle');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const nextPrayerNameElem = document.getElementById('nextPrayerName');
+        const statusText = document.getElementById('statusText');
+        const prayerListElem = document.getElementById('prayerList');
+        const citySelect = document.getElementById('citySelect');
+        const mapModal = document.getElementById('mapModal');
+        const soundSelect = document.getElementById('soundSelect');
+
+        let map;
+        let marker;
+        let currentLat = 35.6762;
+        let currentLon = 139.6503;
+        let activeScheduleData = null;
+
+        // 起動時に保存された音源設定を復元
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedSound = localStorage.getItem('azan_selected_sound');
+            if (savedSound) {
+                soundSelect.value = savedSound;
+            }
+            moveToCurrentGPS(true);
+        });
+
+        function saveSoundSetting() {
+            localStorage.setItem('azan_selected_sound', soundSelect.value);
+            statusText.textContent = "ステータス: 通知音の設定を保存しました";
+            // 設定変更時にすぐスケジュールを再登録して通知音を更新
+            if (activeScheduleData) {
+                // 現在の場所情報を保持したまま再スケジュールできるよう日時を再構築
+                const currentPlace = statusText.textContent.split(': ')[1]?.split(' ')[0] || "現在地";
+                // 既存のスケジュールデータを元に再予約
+                rescheduleNotifications();
+            }
+        }
+
+        function getAzanSoundPath() {
+            const selected = soundSelect.value;
+            if (selected === 'silent') return null; // サイレントの場合は音源なし
+
+            const isApp = window.Capacitor && window.Capacitor.isNativePlatform();
+            if (selected === 'default') {
+                return isApp ? "default" : ""; // 標準アラーム
+            }
+
+            // アザーン音源の場合
+            return isApp ? "azan.mp3" : "./audio/azan.mp3";
+        }
+
+        setInterval(() => {
+            updateCountdown();
+        }, 1000);
+
+        function openMapModal() {
+            mapModal.style.display = 'flex';
+            setTimeout(() => {
+                if (map) {
+                    map.invalidateSize();
+                } else {
+                    initMap(currentLat, currentLon);
+                }
+            }, 100);
+        }
+
+        function closeMapModal() {
+            mapModal.style.display = 'none';
+        }
+
+        function initMap(lat, lon) {
+            if (!map) {
+                map = L.map('map').setView([lat, lon], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                marker = L.marker([lat, lon]).addTo(map);
+
+                map.on('click', function(e) {
+                    const clickedLat = e.latlng.lat;
+                    const clickedLon = e.latlng.lng;
+                    marker.setLatLng([clickedLat, clickedLon]);
+                    getPrayerTimesHybrid(clickedLat, clickedLon, "選択した場所");
+                });
+            } else {
+                map.setView([lat, lon], 13);
+                marker.setLatLng([lat, lon]);
+            }
+        }
+
+        function selectPresetCity() {
+            const val = citySelect.value.split(',');
+            currentLat = parseFloat(val[0]);
+            currentLon = parseFloat(val[1]);
+            const name = val[2];
+            if (map) initMap(currentLat, currentLon);
+            getPrayerTimesHybrid(currentLat, currentLon, name);
+        }
+
+        async function fetchGPSCoords() {
+            const isCapacitor = window.Capacitor && window.Capacitor.Plugins;
+            const Geolocation = isCapacitor ? window.Capacitor.Plugins.Geolocation : null;
+
+            if (Geolocation) {
+                let perm = await Geolocation.checkPermissions();
+                if (perm.location !== 'granted') perm = await Geolocation.requestPermissions();
+                if (perm.location === 'granted') {
+                    const pos = await Geolocation.getCurrentPosition();
+                    return { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                }
+            } else if (navigator.geolocation) {
+                return await new Promise((resolve) => {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+                        () => resolve(null),
+                        { timeout: 5000 }
+                    );
+                });
+            }
+            return null;
+        }
+
+        async function moveToCurrentGPS(updateSchedule = false) {
+            try {
+                statusText.textContent = "ステータス: GPS取得中...";
+                const coords = await fetchGPSCoords();
+
+                if (coords) {
+                    currentLat = coords.lat;
+                    currentLon = coords.lon;
+                    if (map) initMap(currentLat, currentLon);
+                    if (updateSchedule) {
+                        getPrayerTimesHybrid(currentLat, currentLon, "現在地");
+                    }
+                } else {
+                    statusText.textContent = "ステータス: GPS取得不可のため東京に設定";
+                    selectPresetCity();
+                }
+            } catch (e) {
+                console.error(e);
+                statusText.textContent = "ステータス: GPS取得エラー";
+                selectPresetCity();
+            }
+        }
+
+        async function panMapToCurrentGPS() {
+            statusText.textContent = "ステータス: 現在地に移動中...";
+            const coords = await fetchGPSCoords();
+            if (coords) {
+                currentLat = coords.lat;
+                currentLon = coords.lon;
+                if (map) {
+                    map.setView([currentLat, currentLon], 13);
+                    marker.setLatLng([currentLat, currentLon]);
+                }
+                getPrayerTimesHybrid(currentLat, currentLon, "現在地");
+            } else {
+                statusText.textContent = "ステータス: 現在地を取得できませんでした";
+            }
+        }
+
+        async function getPrayerTimesHybrid(lat, lon, placeName) {
+            statusText.textContent = `ステータス: ${placeName} のスケジュールを取得中...`;
+            const dateUnix = Math.floor(Date.now() / 1000);
+            const apiUrl = `https://api.aladhan.com/v1/timings/${dateUnix}?latitude=${lat}&longitude=${lon}&method=2`;
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+                const res = await fetch(apiUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!res.ok) throw new Error("API failed");
+
+                const data = await res.json();
+                const t = data.data.timings;
+
+                const scheduleMap = {
+                    "Fajr (夜明け)": t.Fajr.substring(0, 5),
+                    "Sunrise (日の出)": t.Sunrise.substring(0, 5),
+                    "Dhuhr (昼)": t.Dhuhr.substring(0, 5),
+                    "Asr (午後)": t.Asr.substring(0, 5),
+                    "Maghrib (日没)": t.Maghrib.substring(0, 5),
+                    "Isha (夜)": t.Isha.substring(0, 5)
+                };
+
+                const parseDateObj = (timeStr) => {
+                    const [h, m] = timeStr.split(':').map(Number);
+                    const d = new Date();
+                    d.setHours(h, m, 0, 0);
+                    return d;
+                };
+
+                const dateObjMap = {};
+                for (const [k, v] of Object.entries(scheduleMap)) {
+                    dateObjMap[k] = parseDateObj(v);
+                }
+
+                renderAndSchedule(scheduleMap, dateObjMap, `${placeName} (オンライン)`);
+
+            } catch (err) {
+                console.warn("API取得失敗。太陽軌道ロジックで自力計算します。", err);
+                calculateSolarLocally(lat, lon, placeName);
+            }
+        }
+
+        function calculateSolarLocally(lat, lon, placeName) {
+            try {
+                const now = new Date();
+                const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+                const lngDiffHours = (lon - 135.0) / 15.0;
+                const declination = 23.45 * Math.sin(((280 + dayOfYear) * 360 / 365) * (Math.PI / 180));
+                let dhuhrHour = 12.0 - lngDiffHours;
+
+                const latRad = lat * (Math.PI / 180);
+                const decRad = declination * (Math.PI / 180);
+                const cosHourAngle = -Math.tan(latRad) * Math.tan(decRad);
+                let halfDayHours = 6.0;
+                if (cosHourAngle >= -1 && cosHourAngle <= 1) {
+                    const hourAngle = Math.acos(cosHourAngle) * (180 / Math.PI);
+                    halfDayHours = hourAngle / 15.0;
+                }
+
+                const fajrTime = dhuhrHour - halfDayHours - 1.2;
+                const sunriseTime = dhuhrHour - halfDayHours;
+                const dhuhrTime = dhuhrHour;
+                const asrTime = dhuhrHour + 3.5;
+                const maghribTime = dhuhrHour + halfDayHours;
+                const ishaTime = maghribTime + 1.5;
+
+                const formatTime = (hFloat) => {
+                    let h = Math.floor(hFloat);
+                    let m = Math.floor((hFloat - h) * 60);
+                    if (m >= 60) { h += 1; m -= 60; }
+                    if (h < 0) h += 24;
+                    if (h >= 24) h -= 24;
+                    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                };
+
+                const scheduleMap = {
+                    "Fajr (夜明け)": formatTime(fajrTime),
+                    "Sunrise (日の出)": formatTime(sunriseTime),
+                    "Dhuhr (昼)": formatTime(dhuhrTime),
+                    "Asr (午後)": formatTime(asrTime),
+                    "Maghrib (日没)": formatTime(maghribTime),
+                    "Isha (夜)": formatTime(ishaTime)
+                };
+
+                const makeDate = (timeStr) => {
+                    const [h, m] = timeStr.split(':').map(Number);
+                    const d = new Date();
+                    d.setHours(h, m, 0, 0);
+                    return d;
+                };
+
+                const dateObjMap = {};
+                for (const [k, v] of Object.entries(scheduleMap)) {
+                    dateObjMap[k] = makeDate(v);
+                }
+
+                renderAndSchedule(scheduleMap, dateObjMap, `${placeName} (自立太陽計算)`);
+            } catch (e) {
+                console.error(e);
+                statusText.textContent = "ステータス: 計算エラーが発生しました";
+            }
+        }
+
+        async function renderAndSchedule(scheduleMap, dateObjMap, labelName) {
+            activeScheduleData = dateObjMap;
+
+            prayerListElem.innerHTML = "";
+            let notificationsToSchedule = [];
+            let idCounter = 100;
+            const now = new Date();
+            const currentSound = getAzanSoundPath();
+
+            for (const [name, timeStr] of Object.entries(scheduleMap)) {
+                const isSub = name.includes("Sunrise");
+                prayerListElem.innerHTML += `
+                    <div class="prayer-item ${isSub ? 'sub-event' : ''}" id="item-${name.split(' ')[0]}">
+                        <span>${name}</span>
+                        <strong>${timeStr}</strong>
+                    </div>`;
+
+                const targetDate = dateObjMap[name];
+                if (!isSub && targetDate && targetDate.getTime() > now.getTime()) {
+                    let notifObj = {
+                        title: "礼拝の時間です (Azan)",
+                        body: `${name} の時間になりました。`,
+                        id: idCounter++,
+                        schedule: { at: targetDate }
+                    };
+                    // 音源設定がサイレントでない場合のみサウンドを付与
+                    if (currentSound !== null) {
+                        notifObj.sound = currentSound;
+                    }
+                    notificationsToSchedule.push(notifObj);
+                }
+            }
+
+            const isCapacitor = window.Capacitor && window.Capacitor.Plugins;
+            const LocalNotifications = isCapacitor ? window.Capacitor.Plugins.LocalNotifications : null;
+
+            if (LocalNotifications) {
+                const pending = await LocalNotifications.getPending();
+                if (pending.notifications.length > 0) {
+                    await LocalNotifications.cancel(pending);
+                }
+                if (notificationsToSchedule.length > 0) {
+                    await LocalNotifications.schedule({
+                        notifications: notificationsToSchedule
+                    });
+                }
+            }
+
+            statusText.textContent = `ステータス: ${labelName} の予約完了！✓`;
+            updateCountdown();
+        }
+
+        async function rescheduleNotifications() {
+            if (!activeScheduleData) return;
+            // 既存データを使って再予約
+            let scheduleMap = {};
+            for (const [name, dateObj] of Object.entries(activeScheduleData)) {
+                const h = String(dateObj.getHours()).padStart(2, '0');
+                const m = String(dateObj.getMinutes()).padStart(2, '0');
+                scheduleMap[name] = `${h}:${m}`;
+            }
+            renderAndSchedule(scheduleMap, activeScheduleData, "設定更新");
+        }
+
+        function updateCountdown() {
+            if (!activeScheduleData) return;
+
+            const now = new Date();
+            let nextEventName = null;
+            let nextEventTime = null;
+
+            for (const [name, targetDate] of Object.entries(activeScheduleData)) {
+                if (targetDate.getTime() > now.getTime()) {
+                    nextEventName = name;
+                    nextEventTime = targetDate;
+                    break;
+                }
+            }
+
+            if (!nextEventName) {
+                countdownTitle.textContent = "本日のスケジュールはすべて終了しました";
+                countdownTimer.textContent = "--:--:--";
+                nextPrayerNameElem.textContent = "お疲れ様でした";
+                return;
+            }
+
+            const diffMs = nextEventTime.getTime() - now.getTime();
+            const diffSec = Math.floor(diffMs / 1000);
+
+            const isMaghribPrep = nextEventName.includes("Maghrib") && diffSec <= 1200 && diffSec > 0;
+
+            if (isMaghribPrep) {
+                countdownTitle.textContent = "日没(Maghrib) 準備時間まで";
+                const m = String(Math.floor(diffSec / 60)).padStart(2, '0');
+                const s = String(diffSec % 60).padStart(2, '0');
+                countdownTimer.textContent = `${m}:${s}`;
+                nextPrayerNameElem.textContent = "夕方の準備時間";
+            } else {
+                countdownTitle.textContent = "次のイベントまで";
+                const h = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+                const m = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+                const s = String(diffSec % 60).padStart(2, '0');
+                countdownTimer.textContent = `${h}:${m}:${s}`;
+                nextPrayerNameElem.textContent = `${nextEventName} (${nextEventTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+            }
+
+            document.querySelectorAll('.prayer-item').forEach(el => el.classList.remove('active'));
+            const activeKey = nextEventName.split(' ')[0];
+            const activeElem = document.getElementById(`item-${activeKey}`);
+            if (activeElem) activeElem.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -8,6 +8,29 @@ db.version(4).stores({
     wbw_data: "id", 
     audios: "id"
 });
+document.addEventListener('DOMContentLoaded', () => {
+    const reciterSelect = document.getElementById('audio-reciter');
+    if (reciterSelect) {
+        // すでに存在しているグローバル変数があれば、セレクトボックスの選択状態をそれに合わせる
+        if (typeof currentReciterId !== 'undefined') {
+            reciterSelect.value = currentReciterId;
+        }
+
+        // ユーザーが別の声を選んだときの処理
+        reciterSelect.addEventListener('change', (e) => {
+            const selectedId = e.target.value;
+            
+            // 既存の変数に新しい値を代入（変数名が書き換え可能ならこれでOK）
+            if (typeof currentReciterId !== 'undefined') {
+                currentReciterId = selectedId;
+            }
+            window.currentReciterId = selectedId; // 念のためグローバルにも持たせる
+            
+            console.log(`[AudioEngine] 読み手が変更されました: ${selectedId}`);
+            localStorage.setItem('preferredReciterId', selectedId);
+        });
+    }
+});
 
 // ==========================================
 // 🎨 2. 定数・グローバル変数定義（Material You 拡張版）
@@ -438,131 +461,145 @@ function normalizeArabic(str) {
 }
 
 /**
- * 節（アヤ）の単語群をレンダリング（正規化比較・M3カラー完全対応版）
+ * 節（アヤ）の単語群をレンダリング（完全安全ガード版）
+ */
+/**
+ * 節（アヤ）の単語群をレンダリング（完全・鉄壁ガード版）
  */
 function renderWordsHtml(verse) {
     let wHtml = '';
-    if (!verse.words) return wHtml;
+    
+    // 💡 verse が無い、または words が配列じゃない場合はフォールバックとして text をそのまま表示して安全に抜ける
+    if (!verse || !Array.isArray(verse.words)) {
+        const fallbackText = verse && (verse.text || verse.arabic_text) ? (verse.text || verse.arabic_text) : '';
+        return `<span style="font-family: ${ARABIC_FONT}; font-size: 2rem;">${fallbackText}</span>`;
+    }
 
     verse.words.forEach((w) => {
-        if (w.char_type_name === 'end') return;
+        if (!w || w.char_type_name === 'end') return;
 
         const displayWord = w.display_arabic || '';
-
-        // 💡 比較時に正規化を噛ませて、見た目や記号の揺れによる誤爆をシャットアウト
         const normalizedDisplay = normalizeArabic(displayWord);
-
-        // もし比較対象の基準語がある場合はここで正規化比較する（フラグの暴走を防ぐ）
         const isActuallyDifferent = w.isVariant && normalizedDisplay !== '';
 
-        // 異読（isVariant）フラグによるM3カラーの動的変更
         const variantStyle = isActuallyDifferent 
             ? `color: ${COLORS.CUSTOM_ORANGE}; font-weight: 800; text-shadow: 0 0 10px rgba(255,140,0,0.2);` 
             : `color: ${COLORS.ON_PRIMARY_CONTAINER};`;
 
-        // 既存の安全な文字列エスケープ処理を完全踏襲
-        const escapedTranslation = (w.translation ? w.translation.text : '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const escapedTranslation = (w.translation && w.translation.text) ? w.translation.text.replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
+        const wordTranslationText = (w.translation && w.translation.text) ? w.translation.text : '';
 
         wHtml += `
             <div class="word-box" onclick="openWordModal('${displayWord}', '${escapedTranslation}')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 8px; margin: 4px; background: ${COLORS.PRIMARY_CONTAINER}; border-radius: 12px; min-width: 70px;">
                 <span style="font-family: ${ARABIC_FONT}; font-size: 1.8rem; line-height: 1.4; text-align: center; ${variantStyle}">${displayWord}</span>
-                <span class="wbw" style="font-size: 0.75rem; opacity: 0.8; font-family: ${SANS_FONT}; font-weight: 500; text-align: center; margin-top: 4px;">${w.translation ? w.translation.text : ''}</span>
+                <span class="wbw" style="font-size: 0.75rem; opacity: 0.8; font-family: ${SANS_FONT}; font-weight: 500; text-align: center; margin-top: 4px;">${wordTranslationText}</span>
             </div>
         `;
     });
 
-    return wHtml;
-}    // アヤ番号バッジ（節末を美しく飾るマテリアルサークル仕様）
+    // アヤ番号バッジ
+    const verseNum = verse.verse_number || '';
     wHtml += `
         <div class="word-box" style="cursor: default; background: ${COLORS.PRIMARY_CONTAINER}; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; min-width: 55px; box-shadow: none;">
-            <span style="font-family: ${ARABIC_FONT}; font-size: 2.2rem; color: ${COLORS.PRIMARY}; font-weight: bold; line-height: 1;">&#xFD3F;${verse.verse_number}&#xFD3E;</span>
+            <span style="font-family: ${ARABIC_FONT}; font-size: 2.2rem; color: ${COLORS.PRIMARY}; font-weight: bold; line-height: 1;">&#xFD3F;${verseNum}&#xFD3E;</span>
         </div>`;
         
     return wHtml;
+}
 
 function render() {
     const content = document.getElementById('quran-content');
     const surahTitleEl = document.getElementById('surah-title');
-    if (!content || !apiArabicData || !translationData) return;
+    if (!content) return;
 
-    const info = window.surahInfo;
-    const surahNameArabic = info ? info.name : ""; 
-    const surahNameEnglish = info ? info.englishName : "";
-    const juzId = info ? info.juz : 1; 
-    const ayahsCount = translationData.length;
+    let ayahs = [];
+    if (Array.isArray(window.apiArabicData)) {
+        ayahs = window.apiArabicData;
+    } else if (window.apiArabicData && Array.isArray(window.apiArabicData.ayahs)) {
+        ayahs = window.apiArabicData.ayahs;
+    } else if (typeof apiArabicData !== 'undefined') {
+        if (Array.isArray(apiArabicData)) {
+            ayahs = apiArabicData;
+        } else if (apiArabicData && Array.isArray(apiArabicData.ayahs)) {
+            ayahs = apiArabicData.ayahs;
+        }
+    }
+
+    const safeTranslation = Array.isArray(translationData) ? translationData : [];
+
+    if (ayahs.length === 0) {
+        content.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; font-family: ${SANS_FONT}; color: ${COLORS.ON_SURFACE};">
+                <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 8px;">データをダウンロード・準備中やで... 🔄</div>
+                <div style="font-size: 0.9rem; opacity: 0.7;">少しだけ待ってな！自動で表示されるで〜</div>
+            </div>
+        `;
+        return;
+    }
+
+    const info = window.surahInfo || {};
+    const surahNameArabic = info.name || ""; 
+    const surahNameEnglish = info.englishName || "";
+    const juzId = info.juz || 1; 
+    const safeAyahsCount = safeTranslation.length > 0 ? safeTranslation.length : ayahs.length;
+    const currentSurahId = window.currentSurahId || (info ? info.number : 1);
 
     const found = Object.values(qiraatConfig).find(item => item.id === currentResourceId);
     const selectedText = found ? found.name : "Hafs";
 
-    if (surahTitleEl) surahTitleEl.innerText = `${surahNameEnglish}`;
+    if (surahTitleEl) {
+        surahTitleEl.innerText = `${surahNameEnglish}`;
+    }
 
-// 🌟 6-A. HEADER HERO CARD (Material You "Large Card" 安定版)
-// ※ 描画する前に ayahsCount にちゃんと正しい数（apiArabicData.length など）が入っているか確認！
-const safeAyahsCount = typeof ayahsCount !== 'undefined' ? ayahsCount : (window.apiArabicData ? apiArabicData.length : 0);
-
-let html = `
-    <div style="background: ${COLORS.PRIMARY}; color: ${COLORS.ON_PRIMARY}; padding: 28px 32px; font-family: ${SANS_FONT}; width: 100%; box-sizing: border-box; margin-bottom: 24px; border-radius: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
-        <div style="max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
-            
-           <div style="display: flex; flex-direction: row; align-items: center; gap: 20px; min-width: 220px; flex-wrap: wrap;">
-    <div style="font-family: ${ARABIC_FONT}; font-size: 2.6rem; font-weight: 700; line-height: 1.2;">
-        ${surahNameArabic}
-    </div>
-    <button onclick="openAudioModal('${currentSurahId}')" 
-            style="background: ${COLORS.PRIMARY_CONTAINER}; color: ${COLORS.ON_PRIMARY_CONTAINER}; border: none; border-radius: 100px; padding: 10px 22px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content;">
-        <span class="material-symbols-outlined" style="font-size: 20px;">settings_voice</span>
-        <span>範囲再生設定</span>
-    </button>
-</div>
-            <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-                <div style="width: 1px; background: rgba(255,255,255,0.2); height: 56px; display: none; /* スマホ等で非表示 */"></div>
-                <div style="font-family: monospace; font-size: 0.85rem; color: ${COLORS.TEXT_HERO_JP}; text-align: right; display: flex; align-items: center; gap: 16px;">
-                    <div>
-                        <div style="margin-bottom: 4px;"><span>JUZ</span> <strong style="color:#fff;">${juzId}</strong></div>
-                        <div><span>AYAHS</span> <strong style="color:#fff;">${safeAyahsCount}</strong></div>
+    // 💡 ヘッダー部分を画面幅100%に拡大
+    let html = `
+        <div style="background: ${COLORS.PRIMARY}; color: ${COLORS.ON_PRIMARY}; padding: 28px 40px; font-family: ${SANS_FONT}; width: 100%; box-sizing: border-box; margin-bottom: 24px; border-radius: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 20px; min-width: 220px; flex-wrap: wrap;">
+                    <div style="font-family: ${ARABIC_FONT}; font-size: 2.6rem; font-weight: 700; line-height: 1.2;">
+                        ${surahNameArabic}
                     </div>
-                    <div style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
-                        <span style="font-size: 0.6rem; opacity: 0.7; display: block; letter-spacing: 1px;">QIRA'AT</span>
-                        <span style="color: ${COLORS.CUSTOM_ORANGE}; font-size: 1rem; font-weight: 900;">
-                            ${typeof selectedText !== 'undefined' ? selectedText.split(' ')[0].toUpperCase() : 'HAFS'}
-                        </span>
+                    <button onclick="openAudioModal('${currentSurahId}')" 
+                            style="background: ${COLORS.PRIMARY_CONTAINER}; color: ${COLORS.ON_PRIMARY_CONTAINER}; border: none; border-radius: 100px; padding: 10px 22px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content;">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">settings_voice</span>
+                        <span>範囲再生設定</span>
+                    </button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div style="font-family: monospace; font-size: 0.85rem; color: ${COLORS.TEXT_HERO_JP}; text-align: right; display: flex; align-items: center; gap: 16px;">
+                        <div>
+                            <div style="margin-bottom: 4px;"><span>JUZ</span> <strong style="color:#fff;">${juzId}</strong></div>
+                            <div><span>AYAHS</span> <strong style="color:#fff;">${safeAyahsCount}</strong></div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                            <span style="font-size: 0.6rem; opacity: 0.7; display: block; letter-spacing: 1px;">QIRA'AT</span>
+                            <span style="color: ${COLORS.CUSTOM_ORANGE}; font-size: 1rem; font-weight: 900;">
+                                ${typeof selectedText !== 'undefined' ? selectedText.split(' ')[0].toUpperCase() : 'HAFS'}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
-    </div>
-`;    // 🌟 6-B. AYAH LIST RENDER (Material You Surface Cards コンポーネント群)
-    apiArabicData.forEach((apiVerse, idx) => {
-        const translationText = translationData[idx] ? translationData[idx].text : "...";
+    `;
+
+    ayahs.forEach((verse, index) => {
+        const translationVerse = safeTranslation[index] || {};
         html += `
-            <div id="ayah-anchor-${apiVerse.verse_number}" class="ayah-container" style="padding: 28px;">
-                <div style="max-width: 1100px; margin: 0 auto;">
-                    
-                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; direction: ltr;">
-                        <span style="font-family: monospace; font-weight: 800; color: ${COLORS.PRIMARY}; letter-spacing: 0.5px; font-size: 0.95rem;">AYAH ${apiVerse.verse_number}</span>
-                        
-                        <button onclick="playAyahAudio(${currentSurahId}, ${apiVerse.verse_number})" class="m3-icon-btn">
-                            <span class="material-symbols-outlined" style="font-size: 24px; font-weight: bold;">play_arrow</span>
-                        </button>
-                        <div style="flex-grow: 1; height: 1px; background: ${COLORS.OUTLINE_VARIANT}; opacity: 0.4;"></div>
-                    </div>
-                    
-                    <div style="direction: rtl; margin-bottom: 28px; text-align: right;">
-                        <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 14px 18px; line-height: 5.2rem;">
-                            ${renderWordsHtml(apiVerse)}
-                        </div>
-                    </div>
-                    
-                    <div style="border-left: 4px solid ${COLORS.PRIMARY}; padding-left: 20px; color: ${COLORS.ON_SURFACE_VARIANT}; line-height: 1.8; font-size: 1.05rem; direction: ltr; text-align: left; font-weight: 400;">
-                        ${translationText}
-                    </div>
+            <div class="verse-container" style="width: 100%; box-sizing: border-box; margin-bottom: 24px; padding: 28px; background: ${COLORS.SURFACE}; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <!-- 💡 direction: rtl と flex-wrap: wrap-reverse、または flex-start で右から自然に並ぶように調整 -->
+                <div class="arabic-text" style="font-family: ${ARABIC_FONT}; font-size: 2.2rem; line-height: 2.8; direction: rtl; display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 12px;">
+                    ${renderWordsHtml(verse)}
                 </div>
-            </div>`;
+                <div class="translation-text" style="font-family: ${SANS_FONT}; font-size: 1rem; margin-top: 16px; color: ${COLORS.ON_SURFACE}; line-height: 1.6; text-align: left;">
+                    ${translationVerse.text || ''}
+                </div>
+            </div>
+        `;
     });
+
     content.innerHTML = html;
 }
-
 // ==========================================
 // 🛑 7. オーディオ制御コア（生存者24枠特化型）
 // ==========================================
@@ -599,23 +636,20 @@ function getEveryAyahUrl(surahId, ayahNum, reciterId) {
     return `https://www.everyayah.com/data/${reciterId}/${sStr}${aStr}.mp3`;
 }
 
-/**
- * 音声ファイルをEveryAyahからフェッチしてIndexedDB（倉庫）に保存する関数
- */
 async function cacheAyahAudio(storageKey, surahId, ayahNum, reciterId) {
     const sStr = String(surahId).padStart(3, '0');
     const aStr = String(ayahNum).padStart(3, '0');
     
     const urlCandidates = [];
+    
+    // 💡 選択された読み手のフォルダ構成に合わせてURLを生成
     urlCandidates.push(`https://www.everyayah.com/data/${reciterId}/${sStr}${aStr}.mp3`);
 
     if (reciterId.includes('/')) {
         urlCandidates.push(`https://www.everyayah.com/data/${reciterId}/${sStr}/${aStr}.mp3`);
     }
 
-    if (reciterId !== 'Alafasy_128kbps') {
-        urlCandidates.push(`https://www.everyayah.com/data/Alafasy_128kbps/${sStr}${aStr}.mp3`);
-    }
+    // ❌ ここにあった「勝手にAlafasyにフォールバックする処理」を完全削除！
 
     let response = null;
     let successfulUrl = "";
@@ -652,7 +686,6 @@ async function cacheAyahAudio(storageKey, surahId, ayahNum, reciterId) {
     console.log(`[AudioEngine] 倉庫保存完了: ${storageKey}`);
     return audioBlob;
 }
-
 /**
  * 単一アーヤ（節）の再生関数
  */

@@ -3,339 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AL-くるあーん | 聖典選択</title>
+    <title>ヌール・ステーション - イスラム・ポータル</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Roboto:wght@300;400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/beercss@3.5.1/dist/cdn/beer.min.css">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.5.1/dist/cdn/beer.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@material/web@latest/all.js"></script>
-    
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <style>
+        :root {
+            --android-bg: #f9f9fc !important;
+            --android-text-main: #1a1c19 !important;
+            --android-text-sub: #424944 !important;
+            --primary: #2e693f !important;
+            --android-selected-bg: #cce8cd !important;
+            --android-selected-text: #0b381e !important;
+        }
 
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="AL-くるあーん">
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--android-bg);
+            color: var(--android-text-main);
+            margin: 0;
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
 
-<style>
-    /* 🍏 Android 16 (Baklava) 最新公式トーン */
-    :root {
-        --android-bg: #f9f9fc !important;
-        --android-text-main: #1a1c19 !important;
-        --android-text-sub: #424944 !important;
-        --primary: #2e693f !important;
-        --android-selected-bg: #cce8cd !important;
-        --android-selected-text: #0b381e !important;
-    }
+        .portal-container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
 
-    body { 
-        background-color: var(--android-bg) !important;
-        font-family: "Roboto", "Noto Sans JP", sans-serif !important;
-        margin: 0;
-        padding: 0;
-        color: var(--android-text-main);
-    }
+        .portal-header {
+            margin-bottom: 28px;
+        }
 
-    nav.top {
-        background-color: var(--android-bg) !important;
-        color: var(--android-text-main) !important;
-        box-shadow: none !important;
-        border: none !important;
-        padding: 24px 16px 12px 16px !important;
-        position: relative !important; 
-        height: auto !important;
-        margin-bottom: 16px !important;
-    }
-    nav.top h5 {
-        font-size: 1.5rem !important;
-        font-weight: 500 !important;
-        color: var(--primary) !important;
-        letter-spacing: 1px !important;
-        margin: 0 !important;
-    }
+        .portal-header span {
+            font-size: 48px;
+            color: var(--primary);
+            background-color: var(--android-selected-bg);
+            padding: 16px;
+            border-radius: 24px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
 
-    #surah-list-container {
-        padding: 0 16px 24px 16px !important;
-        display: block !important;
-    }
+        .portal-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: var(--android-text-main);
+        }
 
-    /* 📱 Android 16 (Baklava) 仕様：より滑らかで大きな角丸、完全フラット・ピルスタイル */
-    .android-setting-item {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        text-decoration: none !important;
-        color: inherit !important;
-        border: none !important;
-        box-shadow: none !important;
-        background-color: #ffffff !important;
-        padding: 18px 24px !important;
-        margin-bottom: 10px !important; 
-        border-radius: 28px !important; /* Android 16のトレンドを反映した大きめのラウンド */
-        transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
-    }
+        .portal-header p {
+            font-size: 0.9rem;
+            color: var(--android-text-sub);
+            margin: 0;
+        }
 
-    .android-setting-item:hover {
-        background-color: #f1f4f1 !important;
-    }
+        .portal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
 
-    .android-item-left {
-        display: flex !important;
-        align-items: center !important;
-        gap: 20px !important;
-    }
+        .portal-card-btn {
+            background-color: #ffffff;
+            padding: 20px 24px;
+            border-radius: 24px;
+            border: 1px solid rgba(46, 105, 63, 0.15);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.2s, background-color 0.2s;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
 
-    .android-circle-icon {
-        width: 44px !important;
-        height: 44px !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-weight: 500 !important;
-        font-size: 0.95rem !important;
-        flex-shrink: 0 !important;
-        background-color: #e2e8e3 !important;
-    }
+        .portal-card-btn:hover {
+            transform: translateY(-2px);
+            background-color: #f0f4f1;
+        }
 
-    .android-item-text {
-        display: flex !important;
-        flex-direction: column !important;
-        text-align: left !important;
-    }
+        .portal-card-btn span.material-symbols-outlined {
+            font-size: 32px;
+            color: var(--primary);
+            background-color: var(--android-selected-bg);
+            padding: 12px;
+            border-radius: 16px;
+        }
 
-    .android-surah-title {
-        font-size: 1.1rem !important;
-        font-weight: 500 !important;
-        color: var(--android-text-main) !important;
-    }
+        .portal-card-info h2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0 0 4px 0;
+            color: var(--android-text-main);
+        }
 
-    .android-surah-subtitle {
-        font-size: 0.85rem !important;
-        color: var(--android-text-sub) !important;
-        margin-top: 2px !important;
-    }
+        .portal-card-info p {
+            font-size: 0.8rem;
+            color: var(--android-text-sub);
+            margin: 0;
+        }
 
-    .android-save-badge {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-        font-size: 0.75rem !important;
-        font-weight: 500 !important;
-        color: var(--android-selected-text) !important;
-        background-color: var(--android-selected-bg) !important;
-        padding: 2px 10px !important;
-        border-radius: 8px !important;
-    }
+        /* WebからAPKを落とすためのダウンロードセクション */
+        .download-section {
+            background-color: #ffffff;
+            padding: 16px 20px;
+            border-radius: 20px;
+            border: 1px dashed rgba(46, 105, 63, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
 
-    .surah-name-ar {
-        font-family: 'Amiri', serif !important;
-        font-size: 2rem !important;
-        color: var(--primary) !important;
-        font-weight: normal !important;
-        direction: rtl !important;
-    }
+        .download-info {
+            text-align: left;
+        }
 
-    #search-modal {
-        display: none;
-        position: fixed !important; 
-        top: 0 !important; left: 0 !important; 
-        width: 100% !important; height: 100% !important; 
-        background-color: rgba(249, 249, 252, 0.98) !important; 
-        z-index: 99999 !important; 
-        padding: 140px 24px 24px 24px !important;
-        box-sizing: border-box !important;
-    }
+        .download-info h3 {
+            font-size: 0.9rem;
+            margin: 0 0 2px 0;
+            color: var(--android-text-main);
+        }
 
-    .android-search-container {
-        background-color: #ffffff !important;
-        border-radius: 28px !important; 
-        padding: 12px 24px !important;
-        max-width: 500px !important;
-        margin: 0 auto !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 16px !important;
-        border: 1px solid #dfe3de !important;
-    }
+        .download-info p {
+            font-size: 0.75rem;
+            margin: 0;
+            color: var(--android-text-sub);
+        }
 
-    .android-search-container input {
-        flex-grow: 1 !important;
-        border: none !important;
-        outline: none !important;
-        background: transparent !important;
-        font-size: 1.1rem !important;
-        color: var(--android-text-main) !important;
-        padding: 4px 0 !important;
-        margin: 0 !important;
-        height: auto !important;
-        box-shadow: none !important;
-    }
+        .download-btn {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
 
-    .android-search-close-btn {
-        background: transparent !important;
-        border: none !important;
-        color: var(--primary) !important;
-        font-size: 1rem !important;
-        font-weight: 500 !important;
-        padding: 12px 24px !important;
-        cursor: pointer !important;
-    }
-
-    .btn-download {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-        padding: 14px 28px !important;
-        background-color: var(--primary) !important;
-        color: white !important;
-        text-decoration: none !important;
-        font-weight: 500 !important;
-        border-radius: 24px !important;
-    }
-</style>
+        .download-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
-
-<nav class="top m-0">
-    <button class="circle transparent" data-ui="#offcanvasMenu">
-        <i>menu</i>
-    </button>
-    <h5 class="max center-align font-bold" onclick="goToIndex()" style="cursor: pointer;">
-        AL-くるあーん
-    </h5>
-    <button class="circle transparent" onclick="openSearchModal()">
-        <i>search</i>
-    </button>
-</nav>
-
-<dialog id="offcanvasMenu" class="left large round" style="background-color: var(--android-bg) !important;">
-    <div class="row padding primary s12 text-on-primary" style="margin: -24px -24px 16px -24px; border-radius: 0 28px 0 0; padding: 40px 20px !important; background-color: var(--primary) !important;">
-        <div class="col min">
-            <div class="absolute-center circle white" style="width: 60px; height: 60px; border-radius: 16px; background: white;">
-                <i class="extra font-bold" style="color: var(--primary); font-size: 2.5rem;">menu_book</i>
-            </div>
+    <!-- 利用規約モーダル -->
+<div id="terms-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div style="background: white; padding: 24px; border-radius: 28px; max-width: 400px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+        <h2 style="margin-top: 0; color: var(--primary);">ご利用規約</h2>
+        <div style="font-size: 0.9rem; color: var(--android-text-sub); margin-bottom: 20px; max-height: 300px; overflow-y: auto; line-height: 1.6;">
+            <p><strong>【免責事項】</strong><br>本アプリの礼拝時刻やクルアーンのテキスト等は正確を期していますが、最終確認はご自身で行ってください。本アプリ利用によるトラブル等の責任は負いかねます。</p>
+            <p><strong>【禁止事項】</strong><br>本アプリのソースコードの抽出・改変、および勝手な再配布・公開は固く禁止します。改良版を作成したい場合や公開の要望がある場合は、必ず開発者へ連絡してください。</p>
+            <div style="background: #f0f4f1; padding: 12px; border-radius: 12px; margin: 10px 0; text-align: center;">
+                <p style="margin: 0; font-weight: bold; color: var(--primary);">開発者への連絡先</p>
+                <p style="margin: 5px 0 0 0;">メール:kapukapukawai@gmail.com</p>
+               
+             </div>
+            <p><strong>【方針】</strong><br>皆さまのアイデアを取り入れ、このポータル内で最高のクオリティに仕上げることをお約束します。</p>
         </div>
-        <div class="col max vertical-align" style="margin-left: 20px;">
-            <div>
-                <h5 class="font-bold m-0 text-on-primary" style="font-weight: 700; color: white !important;">AL-くるあーん</h5>
-                <!-- 🚀 最新 Android 16 (Baklava) 表記に完壁対応 -->
-                <label class="opacity-70" style="color: white !important;">Android 16 (Baklava)</label>
-            </div>
-        </div>
-    </div>
-    
-    <nav class="drawer">
-        <a href="javascript:void(0)" onclick="goToIndex()" class="row padding wave">
-            <i>home</i><span>ホーム（目録）</span>
-        </a>
-
-        <details>
-            <summary class="row padding wave">
-                <i>interpreter_mode</i><span class="max">読誦変種（10種）</span><i>expand_more</i>
-            </summary>
-            <div style="padding-left: 32px !important;">
-                <a href="#" class="row padding wave" onclick="changeQiraat('hafs')">Hafs (標準)</a>
-                <a href="#" class="row padding wave" onclick="changeQiraat('warsh')">Warsh</a>
-                <a href="#" class="row padding wave" onclick="changeQiraat('khalaf')">Khalaf</a>
-            </div>
-        </details>
-
-        <details>
-            <summary class="row padding wave">
-                <i>settings</i><span class="max">表示設定</span><i>expand_more</i>
-            </summary>
-            <div style="padding-left: 32px !important;">
-                <div class="row padding">
-                    <i style="color: var(--primary); font-size: 1.2rem;">bolt</i>
-                    <span class="max" style="font-size: 0.95rem;">自動保存モード</span>
-                    <label class="switch"><input type="checkbox" id="autoCacheSwitch"><span></span></label>
-                </div>
-                <a href="#" class="row padding wave" style="font-size: 0.95rem;"><i>format_size</i><span>文字サイズ</span></a>
-                <a href="#" class="row padding wave" style="font-size: 0.95rem;"><i>translate</i><span>和訳の表示切替</span></a>
-            </div>
-        </details>
-
-        <a href="#" class="row padding wave opacity-50">
-            <i>bookmarks</i><span>ブックマーク（近日公開）</span>
-        </a>
-
-        <details>
-            <summary class="row padding wave">
-                <i>download_for_offline</i><span class="max">ダウンロードオプション</span><i>expand_more</i>
-            </summary>
-            <div style="padding-left: 32px !important;">
-                <a href="setting/surainport.html?mode=text" class="row padding wave">📖 聖典本文管理</a>
-                <a href="setting/surainport.html?mode=ja" class="row padding wave">🇯🇵 和訳管理</a>
-                <a href="setting/surainport.html?mode=wbw" class="row padding wave">🧩 単語訳管理</a>
-                <a href="setting/surainport.html?mode=audio" class="row padding wave">🔊 音声管理</a>
-            </div>
-        </details>
-
-        <div class="divider margin"></div>
-
-        <div class="center-align padding margin" style="margin-top: 40px !important;">
-            <h6 class="font-bold">Android版アプリ</h6>
-            <p style="font-size: 0.9rem; color: var(--android-text-sub);">APKファイルをダウンロードしてインストールできます。</p>
-            <a href="App.zip" download="App 16.0.zip" class="btn-download margin">
-                <i>download</i><span>📥 アプリをダウンロード</span>
-            </a>
-        </div>
-    </nav>
-</dialog>
-
-<div id="search-modal" style="display: none;">
-    <div class="android-search-container">
-        <span class="material-symbols-outlined" style="color: var(--android-text-sub);">search</span>
-        <input type="number" id="search-input" placeholder="章番号（1-114）を入力..." min="1" max="114">
-    </div>
-    <div style="margin-top: 24px; text-align: center;">
-        <button onclick="closeSearchModal()" class="android-search-close-btn">閉じる</button>
+        <button id="agree-btn" style="width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 16px; font-size: 1rem; font-weight: 500; cursor: pointer;">
+            同意して入室する
+        </button>
     </div>
 </div>
 
-<main style="margin: 0; padding: 0;">
-    <div id="quran-app-container">
-        <div id="surah-list-container"></div>
+    <div class="portal-container">
+        <div class="portal-header">
+            <span class="material-symbols-outlined">star_rate</span>
+            <h1>ヌール・ステーション</h1>
+            <p>利用するアプリを選択してください</p>
+        </div>
+
+        <div class="portal-buttons">
+            <!-- アザーンアプリへジャンプ -->
+            <a href="Azan/index.html" class="portal-card-btn">
+                <span class="material-symbols-outlined">mosque</span>
+                <div class="portal-card-info">
+                    <h2>アルティメット・アザーン</h2>
+                    <p>礼拝時刻、カウントダウン、GPS・地図設定</p>
+                </div>
+            </a>
+
+            <!-- クルアーンアプリへジャンプ -->
+            <a href="NQA/index.html" class="portal-card-btn">
+                <span class="material-symbols-outlined">auto_stories</span>
+                <div class="portal-card-info">
+                    <h2>クルアーン・リーダー</h2>
+                    <p>章の閲覧、読書、音声リスニング</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Web経由APKダウンロードエリア -->
+        <div class="download-section">
+            <div class="download-info">
+                <h3>最新APKの入手</h3>
+                <p>直接インストール用ファイル</p>
+            </div>
+            <!-- hrefの部分をご自身のAPKファイルのURL（またはダウンロードページ）に書き換えてください -->
+            <a href="https://nxqa-40cde.web.app/App.zip" class="download-btn" download>
+                ダウンロード
+            </a>
+        </div>
     </div>
-</main>
 
-<script src="js/selection.js"></script>
+    <script>
+        // ==========================================
+        // 🚀 自作アプデ通知機能
+        // ==========================================
+        const CURRENT_VERSION = "3.6.0";
 
-<script>
-    function openSearchModal() {
-        document.getElementById('search-modal').style.display = 'block';
-        document.getElementById('search-input').focus();
-    }
-    
-    function closeSearchModal() {
-        document.getElementById('search-modal').style.display = 'none';
-    }
-    
-    function goToIndex() {
-        const menu = document.getElementById('offcanvasMenu');
-        if (menu && menu.close) menu.close();
-        
-        if (window.location.search) {
-            window.location.href = window.location.pathname;
-        } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
+        async function checkAppUpdate() {
+            try {
+                const response = await fetch('https://nxqa-40cde.web.app/version.json', {
+                    cache: 'no-store'
+                });
+                const data = await response.json();
 
-    document.getElementById('search-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            const val = parseInt(e.target.value);
-            if (val >= 1 && val <= 114) {
-                window.location.href = `reader.html?surah=${val}`;
-                closeSearchModal();
-            } else {
-                alert("1から114の数字を入力してください");
+                if (data.latestVersion !== CURRENT_VERSION) {
+                    alert(`新しいバージョン (${data.latestVersion}) がありマス！\n画面下部のダウンロードボタンから最新のAPKを入手してください。`);
+                }
+            } catch (error) {
+                console.log('アプデチェック未実施（オフラインまたはサーバー未設置）');
             }
         }
-    });
-</script>
 
+        // ページ読み込み時にアプデチェックを実行
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAppUpdate();
+        });
+        // ページ読み込み時に規約チェック
+window.addEventListener('DOMContentLoaded', () => {
+    checkAppUpdate();
+
+    // 初回同意チェック
+    if (!localStorage.getItem('termsAccepted')) {
+        document.getElementById('terms-modal').style.display = 'flex';
+    }
+
+    // 同意ボタンの処理
+    document.getElementById('agree-btn').addEventListener('click', () => {
+        localStorage.setItem('termsAccepted', 'true');
+        document.getElementById('terms-modal').style.display = 'none';
+    });
+});
+    </script>
 </body>
 </html>
