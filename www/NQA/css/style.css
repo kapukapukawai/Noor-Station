@@ -77,11 +77,11 @@ nav.navbar.bg-success {
 }
 
 /* 単語ボックス */
-.word-box .wbw {
+/*.word-box .wbw {
     font-size: 13px;
     font-weight: bold;
     color: rgb(29, 69, 51); /* 意味（日本語）も深緑で統一 */
-    direction: ltr;
+/*    direction: ltr;
 }
 
 /* --- 4. 読誦変種（バリアント） --- */

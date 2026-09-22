@@ -123,22 +123,24 @@ const injectMaterialYouStyles = () => {
             transform: scale(1.005);
         }
 
-        /* 単語ボックス：Material Youの「Filled Tonal Button」風デザイン */
+        /* 単語ボックス：文字の長さに合わせつつ、余白を削ってコンパクトに */
         .word-box {
             background: ${COLORS.SURFACE_VARIANT};
             color: ${COLORS.ON_SURFACE_VARIANT};
-            border-radius: 16px;
-            padding: 10px 18px;
+            border-radius: 10px;
+            padding: 8px 8px !important;
             display: inline-flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 0px !important;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
             border: 1px solid transparent;
             user-select: none;
+            width: fit-content; /* ← 文字列の長さに合わせる */
+            min-width: auto !important; /* ← 制限を解除 */
         }
-
+            
         .word-box:hover {
             background: ${COLORS.PRIMARY_CONTAINER};
             color: ${COLORS.ON_PRIMARY_CONTAINER};
@@ -242,18 +244,21 @@ function openQiraatModal() {
 /**
  * モーダル内でのキラート決定・データ再リロード処理
  */
+/**
+ * モーダル内でのキラート決定・データ再リロード処理
+ */
 async function selectQiraatFromModal(qiraatKey) {
     const modalEl = document.getElementById('qiraatModal');
     if (modalEl) {
-        // 修正：Bootstrapではなくネイティブの .close() メソッドを使用
-        modalEl.close();
+        // 自前モーダルを非表示にして閉じる
+        modalEl.style.display = 'none';
     }
 
     const item = qiraatConfig[qiraatKey];
     if (!item) return;
 
-    const scrollPos = window
-    window.scrollY;
+    // スクロール位置を安全に取得
+    const scrollPos = window.scrollY;
     currentResourceId = item.id;
     
     updateQiraatTriggerLabel();
@@ -553,16 +558,16 @@ function render() {
 
     // 💡 ヘッダー部分を画面幅100%に拡大
     let html = `
-        <div style="background: ${COLORS.PRIMARY}; color: ${COLORS.ON_PRIMARY}; padding: 28px 40px; font-family: ${SANS_FONT}; width: 100%; box-sizing: border-box; margin-bottom: 24px; border-radius: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+        <div style="background: ${COLORS.PRIMARY}; color: ${COLORS.ON_PRIMARY}; padding: 28px 40px; font-family: ${SANS_FONT}; width: 100%; box-sizing: border-box; margin-bottom: 24px; border-radius: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
             <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
                 <div style="display: flex; flex-direction: row; align-items: center; gap: 20px; min-width: 220px; flex-wrap: wrap;">
-                    <div style="font-family: ${ARABIC_FONT}; font-size: 2.6rem; font-weight: 700; line-height: 1.2;">
+                    <div style="font-family: ${ARABIC_FONT}; font-size: 2.0rem; font-weight: 700; line-height: 1.2;">
                         ${surahNameArabic}
                     </div>
                     <button onclick="openAudioModal('${currentSurahId}')" 
                             style="background: ${COLORS.PRIMARY_CONTAINER}; color: ${COLORS.ON_PRIMARY_CONTAINER}; border: none; border-radius: 100px; padding: 10px 22px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content;">
                         <span class="material-symbols-outlined" style="font-size: 20px;">settings_voice</span>
-                        <span>範囲再生設定</span>
+                        <span>再生</span>
                     </button>
                 </div>
                 <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
@@ -587,8 +592,7 @@ function render() {
         const translationVerse = safeTranslation[index] || {};
         html += `
             <div class="verse-container" style="width: 100%; box-sizing: border-box; margin-bottom: 24px; padding: 28px; background: ${COLORS.SURFACE}; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                <!-- 💡 direction: rtl と flex-wrap: wrap-reverse、または flex-start で右から自然に並ぶように調整 -->
-                <div class="arabic-text" style="font-family: ${ARABIC_FONT}; font-size: 2.2rem; line-height: 2.8; direction: rtl; display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 12px;">
+                <div class="arabic-text" style="font-family: ${ARABIC_FONT}; font-size: 2.2rem; line-height: 2.8; direction: rtl; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: 6px; width: 100%;">
                     ${renderWordsHtml(verse)}
                 </div>
                 <div class="translation-text" style="font-family: ${SANS_FONT}; font-size: 1rem; margin-top: 16px; color: ${COLORS.ON_SURFACE}; line-height: 1.6; text-align: left;">
@@ -597,7 +601,6 @@ function render() {
             </div>
         `;
     });
-
     content.innerHTML = html;
 }
 // ==========================================
