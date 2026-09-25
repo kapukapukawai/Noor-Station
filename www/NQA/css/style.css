@@ -46,7 +46,7 @@ nav.navbar.bg-success {
 .navbar .btn, 
 .navbar-brand {
     color: rgb(29, 69, 51) !important; 
-    font-weight: 800 !important;
+    font-weight: 400 !important;
 }
 
 /* セレクトボックス（読誦変種）を白背景に馴染ませる */

@@ -248,6 +248,46 @@
             font-size: 0.9rem;
             cursor: pointer;
         }
+        /* --- スーラリストカードのレイアウト修正 --- */
+    .surah-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        background-color: #ffffff;
+        border-radius: 16px;
+        margin-bottom: 8px;
+        box-sizing: border-box;
+    }
+
+    /* 真ん中の情報エリア（これが縮めるように min-width: 0 が必須！） */
+    .surah-info {
+        flex: 1;
+        min-width: 0; 
+    }
+
+    /* 「第1章 / 7節 ・ 保存済」の行を1行でスマートに収め、はみ出た分は三点リーダーにする */
+    .surah-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.8rem;
+        color: var(--android-text-sub);
+    }
+
+    /* 右側のアラビア語名が長くてカードを突き破るのを防ぐ */
+    .surah-arabic-name {
+        font-family: 'Amiri', 'Traditional Arabic', serif;
+        font-size: 1.25rem;
+        text-align: right;
+        white-space: nowrap;
+        flex-shrink: 0; /* 絶対に縮小されないように守る */
+        color: var(--primary);
+    }
     </style>
 </head>
 <body>

@@ -565,7 +565,7 @@ function render() {
                         ${surahNameArabic}
                     </div>
                     <button onclick="openAudioModal('${currentSurahId}')" 
-                            style="background: ${COLORS.PRIMARY_CONTAINER}; color: ${COLORS.ON_PRIMARY_CONTAINER}; border: none; border-radius: 100px; padding: 10px 22px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content;">
+                            style="background: ${COLORS.PRIMARY_CONTAINER}; color: ${COLORS.ON_PRIMARY_CONTAINER}; border: none; border-radius: 50px; padding: 8px 12px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content;">
                         <span class="material-symbols-outlined" style="font-size: 20px;">settings_voice</span>
                         <span>再生</span>
                     </button>
