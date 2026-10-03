@@ -219,30 +219,7 @@
     </div>
 
     <script>
-        // ==========================================
-        // 🚀 自作アプデ通知機能
-        // ==========================================
-        const CURRENT_VERSION = "3.6.0";
-
-        async function checkAppUpdate() {
-            try {
-                const response = await fetch('https://nxqa-40cde.web.app/version.json', {
-                    cache: 'no-store'
-                });
-                const data = await response.json();
-
-                if (data.latestVersion !== CURRENT_VERSION) {
-                    alert(`新しいバージョン (${data.latestVersion}) がありマス！\n画面下部のダウンロードボタンから最新のAPKを入手してください。`);
-                }
-            } catch (error) {
-                console.log('アプデチェック未実施（オフラインまたはサーバー未設置）');
-            }
-        }
-
-        // ページ読み込み時にアプデチェックを実行
-        window.addEventListener('DOMContentLoaded', () => {
-            checkAppUpdate();
-        });
+        
         // ページ読み込み時に規約チェック
 window.addEventListener('DOMContentLoaded', () => {
     checkAppUpdate();

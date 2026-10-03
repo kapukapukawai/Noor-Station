@@ -70,9 +70,9 @@
         border: none !important;
         box-shadow: none !important;
         background-color: #ffffff !important;
-        padding: 18px 24px !important;
-        margin-bottom: 10px !important; 
-        border-radius: 28px !important; /* Android 16のトレンドを反映した大きめのラウンド */
+        padding: 5px 6px !important;
+        margin-bottom: 10px !important;
+        border-radius: 14px !important; /* Android 16のトレンドを反映した大きめのラウンド */
         transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
     }
 
@@ -210,80 +210,6 @@
     </button>
 </nav>
 
-<dialog id="offcanvasMenu" class="left large round" style="background-color: var(--android-bg) !important;">
-    <div class="row padding primary s12 text-on-primary" style="margin: -24px -24px 16px -24px; border-radius: 0 28px 0 0; padding: 40px 20px !important; background-color: var(--primary) !important;">
-        <div class="col min">
-            <div class="absolute-center circle white" style="width: 60px; height: 60px; border-radius: 16px; background: white;">
-                <i class="extra font-bold" style="color: var(--primary); font-size: 2.5rem;">menu_book</i>
-            </div>
-        </div>
-        <div class="col max vertical-align" style="margin-left: 20px;">
-            <div>
-                <h5 class="font-bold m-0 text-on-primary" style="font-weight: 700; color: white !important;">AL-くるあーん</h5>
-                <!-- 🚀 最新 Android 16 (Baklava) 表記に完壁対応 -->
-                <label class="opacity-70" style="color: white !important;">3.5 BaklavaUI</label>
-            </div>
-        </div>
-    </div>
-    
-    <nav class="drawer">
-        <a href="javascript:void(0)" onclick="goToIndex()" class="row padding wave">
-            <i>home</i><span>ホーム（目録）</span>
-        </a>
-
-        <details>
-            <summary class="row padding wave">
-                <i>interpreter_mode</i><span class="max">読誦変種（10種）</span><i>expand_more</i>
-            </summary>
-            <div style="padding-left: 32px !important;">
-                <a href="#" class="row padding wave" onclick="changeQiraat('hafs')">Hafs (標準)</a>
-                <a href="#" class="row padding wave" onclick="changeQiraat('warsh')">Warsh</a>
-                <a href="#" class="row padding wave" onclick="changeQiraat('khalaf')">Khalaf</a>
-            </div>
-        </details>
-
-        <details>
-            <summary class="row padding wave">
-                <i>settings</i><span class="max">表示設定</span><i>expand_more</i>
-            </summary>
-            <div style="padding-left: 32px !important;">
-                <div class="row padding">
-                    <i style="color: var(--primary); font-size: 1.2rem;">bolt</i>
-                    <span class="max" style="font-size: 0.95rem;">自動保存モード</span>
-                    <label class="switch"><input type="checkbox" id="autoCacheSwitch"><span></span></label>
-                </div>
-                <a href="#" class="row padding wave" style="font-size: 0.95rem;"><i>format_size</i><span>文字サイズ</span></a>
-                <a href="#" class="row padding wave" style="font-size: 0.95rem;"><i>translate</i><span>和訳の表示切替</span></a>
-            </div>
-        </details>
-
-        <a href="#" class="row padding wave opacity-50">
-            <i>bookmarks</i><span>ブックマーク（近日公開）</span>
-        </a>
-
-        <details>
-            <summary class="row padding wave">
-                <i>download_for_offline</i><span class="max">ダウンロードオプション</span><i>expand_more</i>
-            </summary>
-            <div style="padding-left: 32px !important;">
-                <a href="setting/surainport.html?mode=text" class="row padding wave">📖 聖典本文管理</a>
-                <a href="setting/surainport.html?mode=ja" class="row padding wave">🇯🇵 和訳管理</a>
-                <a href="setting/surainport.html?mode=wbw" class="row padding wave">🧩 単語訳管理</a>
-                <a href="setting/surainport.html?mode=audio" class="row padding wave">🔊 音声管理</a>
-            </div>
-        </details>
-
-        <div class="divider margin"></div>
-
-        <div class="center-align padding margin" style="margin-top: 40px !important;">
-            <h6 class="font-bold">Android版アプリ</h6>
-            <p style="font-size: 0.9rem; color: var(--android-text-sub);">APKファイルをダウンロードしてインストールできます。</p>
-            <a href="App.zip" download="App 16.0.zip" class="btn-download margin">
-                <i>download</i><span>📥 アプリをダウンロード</span>
-            </a>
-        </div>
-    </nav>
-</dialog>
 
 <div id="search-modal" style="display: none;">
     <div class="android-search-container">

@@ -17,10 +17,7 @@
         --text-sub: #404943;
         --card-bg: #ffffff;
         --icon-bg: #e1e4df;
-        --selected-bg: #dbedd7;
         --primary: #386a4a;
-        --on-primary: #ffffff;
-        --variant-orange: #b12d00;
     }
 
     body { 
@@ -40,11 +37,11 @@
     /* トップナビゲーション */
     nav.top {
         background-color: var(--card-bg);
-        padding: 12px 20px;
+        padding: 10px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        min-height: 64px;
+        min-height: 32px;
         position: sticky;
         top: 0;
         z-index: 100;
@@ -79,10 +76,10 @@
     .capsule-btn {
         background-color: var(--icon-bg);
         color: var(--text-main);
-        border-radius: 20px;
+        border-radius: 10px;
         font-weight: 500;
         font-size: 0.85rem;
-        padding: 8px 16px;
+        padding: 4px 8px;
         border: none;
         display: inline-flex;
         align-items: center;
@@ -95,7 +92,7 @@
 
     /* メインコンテンツ */
     .reader-container {
-        max-width: 900px;
+        max-width: 100%;
         margin: 20px auto;
         padding: 0 16px 60px 16px;
     }
@@ -103,8 +100,8 @@
     /* アラビア文字・訳文カード */
     .verse-card {
         background-color: var(--card-bg);
-        border-radius: 20px;
-        padding: 20px;
+        border-radius: 10px;
+        padding: 10px;
         margin-bottom: 16px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
@@ -147,10 +144,6 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
         box-sizing: border-box !important;
     }
-    @keyframes modal-pop {
-        0% { transform: scale(0.9); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-    }
     .custom-modal h5 { margin-top: 0; color: var(--primary); font-size: 1.2rem; }
     
     /* 💡 右上の「×」ボタン用スタイル */
@@ -184,20 +177,18 @@
         margin-bottom: 14px;
         font-size: 0.95rem;
     }
-    @keyframes modal-pop {
-        0% { transform: scale(0.9); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-    .custom-modal h5 { margin-top: 0; color: var(--primary); font-size: 1.2rem; }
-    .custom-modal select, .custom-modal input[type="range"] {
+
+    /* スライダー本体の微調整（はみ出し防止とM3スタイル化） */
+    #playbackRateSlider {
         width: 100%;
-        padding: 10px;
-        border-radius: 12px;
-        border: 1px solid var(--icon-bg);
-        background: #fff;
-        margin-top: 6px;
-        margin-bottom: 14px;
-        font-size: 0.95rem;
+        height: 6px;
+        border-radius: 3px;
+        background: #e0e4df;
+        outline: none;
+        accent-color: var(--primary);
+        cursor: pointer;
+        box-sizing: border-box;
+        margin: 8px 0;
     }
 </style>
 </head>
@@ -206,16 +197,16 @@
 <!-- トップナビ -->
 <nav class="top">
     <a href="index.html" class="btn-back">❮</a>
-    <h5 id="surah-title">読み込み中...</h5>
+    <h5 id="surah-title">読み込み中</h5>
     <div class="row gap">
         <button id="nav-play-btn" onclick="togglePlayback()" class="capsule-btn">
-            <span class="material-symbols-outlined" style="font-size: 16px;">play_arrow</span>
+            <span class="material-symbols-outlined" style="font-size: 18px;">play_arrow</span>
             <span>再生</span>
         </button>
-        <button onclick="openModal('qiraatModal')" class="capsule-btn">
-            <span class="material-symbols-outlined" style="font-size: 16px;">translate</span>
-            <span id="current-qiraat-label">HAFS</span>
-        </button>
+        <button onclick="openQiraatModal()" class="capsule-btn">
+    <span class="material-symbols-outlined" style="font-size: 15px;">translate</span>
+    <span id="current-qiraat-label">キラート</span>
+</button>
     </div>
 </nav>
 
@@ -279,6 +270,16 @@
             <option value="5">5回</option>
             <option value="999">無限ループ</option>
         </select>
+
+        <div style="margin-top: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <label style="font-size: 0.75rem; color: var(--text-sub);">⚡ 再生速度</label>
+        <span id="playbackRateLabel" style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">1.0x</span>
+    </div>
+    <!-- value を 1.25 にする -->
+<input type="range" id="playbackRateSlider" min="0.5" max="2.0" step="0.05" value="1.25">
+</div>
+        <!-- 追加ここまで 🚀 -->
 
         <div class="row between" style="margin-top: 20px;">
             <button class="capsule-btn" style="background: #ffebee; color: #c62828;" onclick="stopPlayback(); closeModal('audioModal')">停止</button>

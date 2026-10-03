@@ -50,9 +50,9 @@ const COLORS = {
     ON_PRIMARY_CONTAINER: '#1d4533',
     
     // Secondary / Accent (異読用アクセントオレンジ)
-    CUSTOM_ORANGE: '#FF8C00',
-    SURFACE_VARIANT: '#f0f4f1',
-    ON_SURFACE_VARIANT: '#414944',
+    //CUSTOM_ORANGE: '#FF8C00',
+    //SURFACE_VARIANT: '#f0f4f1',
+    //ON_SURFACE_VARIANT: '#414944',
     
     // M3ベースカラー
     BACKGROUND: '#f8faf7',
@@ -235,13 +235,12 @@ function openQiraatModal() {
     });
     container.innerHTML = html;
 
-    // Bootstrapを廃止し、ネイティブの showModal() を使用
+    // 自前モーダルを flex で表示するように修正
     const modalEl = document.getElementById('qiraatModal');
-    if (modalEl && typeof modalEl.showModal === 'function') {
-        modalEl.showModal();
+    if (modalEl) {
+        modalEl.style.display = 'flex';
     }
-}
-/**
+}/**
  * モーダル内でのキラート決定・データ再リロード処理
  */
 /**
@@ -565,8 +564,8 @@ function render() {
                         ${surahNameArabic}
                     </div>
                     <button onclick="openAudioModal('${currentSurahId}')" 
-                            style="background: ${COLORS.PRIMARY_CONTAINER}; color: ${COLORS.ON_PRIMARY_CONTAINER}; border: none; border-radius: 50px; padding: 8px 12px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content;">
-                        <span class="material-symbols-outlined" style="font-size: 20px;">settings_voice</span>
+                            style="background: ${COLORS.PRIMARY_CONTAINER}; color: ${COLORS.ON_PRIMARY_CONTAINER}; border: none; border-radius: 100px; padding: 5px 10px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: fit-content;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">settings_voice</span>
                         <span>再生</span>
                     </button>
                 </div>
@@ -576,7 +575,7 @@ function render() {
                             <div style="margin-bottom: 4px;"><span>JUZ</span> <strong style="color:#fff;">${juzId}</strong></div>
                             <div><span>AYAHS</span> <strong style="color:#fff;">${safeAyahsCount}</strong></div>
                         </div>
-                        <div style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                        <div style="background: rgba(255,255,255,0.1); padding: 3px 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
                             <span style="font-size: 0.6rem; opacity: 0.7; display: block; letter-spacing: 1px;">QIRA'AT</span>
                             <span style="color: ${COLORS.CUSTOM_ORANGE}; font-size: 1rem; font-weight: 900;">
                                 ${typeof selectedText !== 'undefined' ? selectedText.split(' ')[0].toUpperCase() : 'HAFS'}
@@ -743,6 +742,39 @@ async function playAyahAudio(surahId, ayahNum) {
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const playbackSlider = document.getElementById('playbackRateSlider');
+    const playbackLabel = document.getElementById('playbackRateLabel');
+
+    if (playbackSlider) {
+        playbackSlider.addEventListener('input', (e) => {
+            const sliderVal = parseFloat(e.target.value);
+            let actualSpeed;
+
+            if (sliderVal <= 1.25) {
+                actualSpeed = 0.5 + (sliderVal - 0.5) * (0.5 / 0.75);
+            } else {
+                actualSpeed = 1.0 + (sliderVal - 1.25) * (1.0 / 0.75);
+            }
+
+            actualSpeed = Math.round(actualSpeed * 20) / 20;
+
+            if (playbackLabel) {
+                playbackLabel.textContent = actualSpeed.toFixed(2) + 'x';
+            }
+            
+            if (typeof currentAudio !== 'undefined' && currentAudio) {
+                currentAudio.playbackRate = actualSpeed;
+            }
+
+            const min = parseFloat(playbackSlider.min) || 0.5;
+            const max = parseFloat(playbackSlider.max) || 2.0;
+            const percentage = ((sliderVal - min) / (max - min)) * 100;
+            playbackSlider.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, #e0e4df ${percentage}%)`;
+        });
+    }
+});
 /**
  * 🎧 オーディオ設定・範囲選択モーダルを開く関数
  */
@@ -950,6 +982,7 @@ function getAudioDuration(surahId, ayahNum) {
         }
     });
 }
+
 
 function openWordModal(arabic, trans) {
     console.log(`[WordModal] Word: ${arabic}, Translation: ${trans}`);
