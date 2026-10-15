@@ -210,7 +210,82 @@
     </button>
 </nav>
 
+<!-- サイドメニュー（オフキャンパス） -->
+<dialog id="offcanvasMenu" class="left" style="padding: 0; border: none; background: transparent; max-width: 320px; width: 85%; height: 100%; margin: 0;">
+    <div style="background: var(--android-surface, #ffffff); height: 100%; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 4px 0 24px rgba(0,0,0,0.15);">
+        
+        <!-- 緑のヘッダー部分 -->
+        <div style="background: #2e5a44; color: white; padding: 24px 20px; position: relative;">
+           
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button onclick="closeOffcanvasMenu()" 
+        style="position: absolute; top: 16px; right: 16px; 
+               width: 36px; height: 36px; min-width: 36px; min-height: 36px; 
+               padding: 0; border: none; border-radius: 50%; 
+               background: rgba(255, 255, 255, 0.2); color: white; 
+               display: flex; align-items: center; justify-content: center; 
+               cursor: pointer; z-index: 10;">
+    <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+</button>  <div style="background: white; color: #2e5a44; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    <span class="material-symbols-outlined">menu_book</span>
+                </div>
+                <div>
+                    <div style="font-weight: bold; font-size: 1.1rem;">AL-くるあーん</div>
+                    <div style="font-size: 0.75rem; opacity: 0.85;">3.72 BaklavaUI</div>
+                </div>
+            </div>
+        </div>
 
+        <!-- メニュー項目リスト -->
+        <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1;">
+            
+            <!-- ホーム（目録） -->
+            <a href="index.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #f2f4f3; border-radius: 16px; text-decoration: none; color: inherit; font-weight: 500;">
+                <span class="material-symbols-outlined" style="color: #2e5a44;">home</span>
+                <span>ホーム（目録）　　　　　　　　　　</span>
+            </a>
+
+            <!-- 読誦変種 -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f2f4f3; border-radius: 16px; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="material-symbols-outlined" style="color: #2e5a44;">group</span>
+                    <span>読誦変種（10種）</span>
+                </div>
+                <span class="material-symbols-outlined">expand_more</span>
+            </div>
+
+            <!-- 表示設定（日本語切替スイッチなど） -->
+            <div style="background: #f2f4f3; border-radius: 16px; padding: 12px 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="material-symbols-outlined" style="color: #2e5a44;">settings</span>
+                        <span>日本語で表示</span>
+                    </div>
+                    <!-- 💡 日本語表示切り替えスイッチ -->
+                    <input type="checkbox" id="japaneseDisplaySwitch" style="transform: scale(1.2); cursor: pointer;">
+                </div>
+            </div>
+
+            <!-- ブックマーク（近日公開） -->
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #fafafa; border-radius: 16px; color: #aaa; opacity: 0.8;">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span>ブックマーク（近日公開）</span>
+            </div>
+
+            <!-- ダウンロードオプション -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f2f4f3; border-radius: 16px; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="material-symbols-outlined" style="color: #2e5a44;">download</span>
+                    <span>ダウンロードオプション</span>
+                </div>
+                <span class="material-symbols-outlined">expand_more</span>
+            </div>
+
+            
+
+        </div>
+    </div>
+</dialog>
 <div id="search-modal" style="display: none;">
     <div class="android-search-container">
         <span class="material-symbols-outlined" style="color: var(--android-text-sub);">search</span>

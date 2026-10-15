@@ -2,11 +2,12 @@
 // 📦 1. 倉庫（IndexedDB / Dexie）の定義
 // ==========================================
 const db = new Dexie("QuranOfflineDB");
-db.version(4).stores({ 
+db.version(5).stores({ 
     surahs: "id",
     translations: "id",
     wbw_data: "id", 
-    audios: "id"
+    audios: "id",     // 💡 ここにカンマが必要！
+    metadata: "key"
 });
 document.addEventListener('DOMContentLoaded', () => {
     const reciterSelect = document.getElementById('audio-reciter');
@@ -198,9 +199,11 @@ window.onload = async () => {
     // 初期キラートラベル（HAFSなど）をヘッダーボタンに反映
     updateQiraatTriggerLabel();
     
+    // 💡 データベース（db）の準備が整ったあとにタイトルを非同期更新
+    await updateReaderSurahTitle(currentSurahId);
+    
     await loadHybridData(currentSurahId, currentResourceId);
 };
-
 /**
  * 旧セレクトボックス用の互換ラップ関数
  */
@@ -464,6 +467,7 @@ function normalizeArabic(str) {
         .trim();
 }
 
+
 /**
  * 節（アヤ）の単語群をレンダリング（完全安全ガード版）
  */
@@ -514,6 +518,11 @@ function renderWordsHtml(verse) {
 function render() {
     const content = document.getElementById('quran-content');
     const surahTitleEl = document.getElementById('surah-title');
+    // 例：URLから ?surah=1 などの番号を取り出している部分
+const urlParams = new URLSearchParams(window.location.search);
+const surahNum = urlParams.get('surah') || 1; // デフォルトで1章など
+
+// 💡 ここでさっきの関数を呼び出す！
     if (!content) return;
 
     let ayahs = [];
@@ -602,6 +611,44 @@ function render() {
     });
     content.innerHTML = html;
 }
+
+// リーダー画面のタイトルを言語設定に合わせて更新する関数
+async function updateReaderSurahTitle(surahNumber) {
+    const surahTitleEl = document.getElementById('surah-title');
+    if (!surahTitleEl) return; // 要素がなければ何もしない
+    
+    try {
+        const settingObj = await db.metadata.get('displayJapanese');
+        const isJapanese = settingObj ? settingObj.value : false;
+
+        const [resSurahs, resJa] = await Promise.all([
+            fetch('../surahs.json'),
+            fetch('../surah_ja.json')
+        ]);
+
+        let surahTitle = `Surah ${surahNumber}`;
+
+        if (resSurahs.ok) {
+            const jsonSurahs = await resSurahs.json();
+            const surahArray = jsonSurahs.surahs || jsonSurahs;
+            const currentSurah = surahArray.find(s => s.number === Number(surahNumber));
+
+            if (currentSurah) {
+                if (isJapanese && resJa.ok) {
+                    const jaData = await resJa.json();
+                    surahTitle = jaData[surahNumber] || currentSurah.englishName;
+                } else {
+                    surahTitle = currentSurah.englishName;
+                }
+            }
+        }
+
+        surahTitleEl.textContent = surahTitle;
+    } catch (e) {
+        console.error("リーダータイトルの更新に失敗しました:", e);
+    }
+}
+
 // ==========================================
 // 🛑 7. オーディオ制御コア（生存者24枠特化型）
 // ==========================================
